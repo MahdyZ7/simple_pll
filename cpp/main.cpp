@@ -155,18 +155,18 @@ void print_cofficients(int frac_size)
 	for (int i = 0; i < len_y_coff; ++i)
 		y_coff_fixed[i] = Fixed<FixedType>(y_coff[i], frac_size);
 	
-	std::cout << "// Fixed point coefficients with frac size " << frac_size << " :" << std::endl;
-	std::cout << "// X coefficients: \n";
+	std::cout << "\t// Fixed point coefficients with frac size " << frac_size << " :" << std::endl;
+	std::cout << "\t// X coefficients: \n";
 	for (int i = 0; i < len_x_coff; ++i)
 	{
-		std::cout << "localparam signed [COEFF_WIDTH-1:0] c"<< i << " =  " << fixed_to_string(x_coff_fixed[i])
+		std::cout << "\tlocalparam signed [COEFF_WIDTH-1:0] c"<< i << " =  " << fixed_to_string(x_coff_fixed[i])
 					<< ";  // " << x_coff[i] << " * " << (1u << frac_size) << " ≈ " << x_coff_fixed[i].getRawBits() << std::endl;
 	}
 	std::cout << std::endl;
-	std::cout << "// Y coefficients: \n";
+	std::cout << "\t// Y coefficients: \n";
 	for (int i = 0; i < len_y_coff; ++i)
 	{
-		std::cout << "localparam signed [COEFF_WIDTH-1:0] cy"<< i+1 << " =  " << fixed_to_string(y_coff_fixed[i])
+		std::cout << "\tlocalparam signed [COEFF_WIDTH-1:0] cy"<< i+1 << " =  " << fixed_to_string(y_coff_fixed[i])
 					<< ";  // " << y_coff[i] << " * " << (1u << frac_size) << " ≈ " << y_coff_fixed[i].getRawBits() << std::endl;
 	}
 	std::cout << std::endl;
