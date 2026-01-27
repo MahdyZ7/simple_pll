@@ -9,3 +9,4 @@ modelsim.ini
 TB_PLL_FOA/
 vsim.wlf
 transcript
+*.vcd
