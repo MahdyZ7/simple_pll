@@ -3,7 +3,7 @@
 module basys3_pll_top #(
     parameter DATA_WIDTH = 32,
     parameter COEFF_WIDTH = 32,
-    parameter CLK_DIV = 4          // Clock divider: 100MHz / 4 = 25MHz for filter
+    parameter CLK_DIV = 1048576         // Clock divider: 100MHz / 4 = 25MHz for filter
 ) (
     input  logic        clk,       // 100 MHz oscillator
     input  logic        btnC,      // Center button - reset
@@ -45,20 +45,6 @@ module basys3_pll_top #(
         end
     end
 
-    // Synchronize reset to slow clock domain
-    logic rst_slow_n, rst_slow_sync1, rst_slow_sync2;
-
-    always_ff @(posedge clk_slow or negedge rst_n) begin
-        if (!rst_n) begin
-            rst_slow_sync1 <= 1'b0;
-            rst_slow_sync2 <= 1'b0;
-        end else begin
-            rst_slow_sync1 <= 1'b1;
-            rst_slow_sync2 <= rst_slow_sync1;
-        end
-    end
-    assign rst_slow_n = rst_slow_sync2;
-
     // =========================================================================
     // Simple Test Pattern Generator (runs on slow clock)
     // =========================================================================
@@ -71,8 +57,8 @@ module basys3_pll_top #(
 
     // Synchronize sw[0] to slow clock domain
     logic sw0_sync1, sw0_sync2;
-    always_ff @(posedge clk_slow or negedge rst_slow_n) begin
-        if (!rst_slow_n) begin
+    always_ff @(posedge clk_slow or negedge rst_n) begin
+        if (!rst_n) begin
             sw0_sync1 <= 1'b0;
             sw0_sync2 <= 1'b0;
         end else begin
@@ -84,12 +70,20 @@ module basys3_pll_top #(
     // Input values (same as original testbench)
     localparam logic signed [DATA_WIDTH-1:0] VAL_A = 32'sd25;
     localparam logic signed [DATA_WIDTH-1:0] VAL_B = 32'sd50;
+	localparam logic [31:0] input_period = 32'd0100;
+	logic [31:0] input_counter;
 
-    always_ff @(posedge clk_slow or negedge rst_slow_n) begin
-        if (!rst_slow_n) begin
+    always_ff @(posedge clk_slow or negedge rst_n) begin
+        if (!rst_n) begin
             toggle_state <= 1'b0;
+			input_counter <= 32'd0;
         end else if (sw0_sync2) begin
-            toggle_state <= ~toggle_state;
+			if (input_counter < input_period - 1) begin
+				input_counter <= input_counter + 1;
+			end else begin
+				input_counter <= 32'd0;
+				toggle_state <= ~toggle_state;
+			end
         end
     end
 
@@ -104,35 +98,12 @@ module basys3_pll_top #(
         .COEFF_WIDTH(COEFF_WIDTH)
     ) u_pll_foa (
         .clk(clk_slow),
-        .rst_n(rst_slow_n),
+        .rst_n(rst_n),
         .valid_in(valid_in),
         .x_in(x_in),
         .valid_out(valid_out),
         .y_out(y_out)
     );
-
-    // =========================================================================
-    // Synchronize slow clock domain signals back to fast clock for display
-    // =========================================================================
-    logic valid_out_sync1, valid_out_sync2;
-    logic toggle_sync1, toggle_sync2;
-    logic signed [DATA_WIDTH-1:0] y_out_sync;
-
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            valid_out_sync1 <= 1'b0;
-            valid_out_sync2 <= 1'b0;
-            toggle_sync1 <= 1'b0;
-            toggle_sync2 <= 1'b0;
-            y_out_sync <= '0;
-        end else begin
-            valid_out_sync1 <= valid_out;
-            valid_out_sync2 <= valid_out_sync1;
-            toggle_sync1 <= toggle_state;
-            toggle_sync2 <= toggle_sync1;
-            y_out_sync <= y_out;  // Multi-bit sync okay for display (slowly changing)
-        end
-    end
 
     // =========================================================================
     // Simple LED Status
@@ -144,17 +115,17 @@ module basys3_pll_top #(
     // LED[15:4]: Lower 12 bits of y_out
 
     assign led[0] = sw[0];
-    assign led[1] = valid_out_sync2;
-    assign led[2] = toggle_sync2;
+    assign led[1] = valid_out;
+    assign led[2] = toggle_state;
     assign led[3] = ~rst_n;
-    assign led[15:4] = y_out_sync[11:0];
+    assign led[15:4] = y_out[11:0];
 
     // =========================================================================
     // Simple 7-Segment Display (directly show y_out bits)
     // =========================================================================
     // Display the integer part of y_out (bits [31:16])
     logic [15:0] display_val;
-    assign display_val = y_out_sync[31:16];  // Show upper 16 bits (integer + some frac)
+    assign display_val = {x_in[7:0], y_out[7:0]};  // Show lower 16 bits
 
     // Simple hex decoder for one digit
     function automatic logic [6:0] hex_to_seg(input logic [3:0] hex);
