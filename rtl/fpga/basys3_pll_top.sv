@@ -1,147 +1,110 @@
-// Basys 3 Top-Level Wrapper for PLL IIR Filter Testing
+// Simplified Basys 3 Top-Level Wrapper for PLL IIR Filter Testing
 // Target: Xilinx Artix-7 (XC7A35T-1CPG236C)
 module basys3_pll_top #(
-    parameter CLK_FREQ = 100_000_000,  // 100 MHz Basys 3 clock
     parameter DATA_WIDTH = 32,
-    parameter COEFF_WIDTH = 32
+    parameter COEFF_WIDTH = 32,
+    parameter CLK_DIV = 4          // Clock divider: 100MHz / 4 = 25MHz for filter
 ) (
-    // Clock and Reset
-    input  logic        clk,           // 100 MHz oscillator
-    input  logic        btnC,          // Center button (active high) - system reset
-
-    // Switches
-    input  logic [15:0] sw,
-
-    // LEDs
-    output logic [15:0] led,
-
-    // Seven Segment Display
-    output logic [6:0]  seg,           // Segments a-g (active low)
-    output logic        dp,            // Decimal point (active low)
-    output logic [3:0]  an             // Anodes (active low)
+    input  logic        clk,       // 100 MHz oscillator
+    input  logic        btnC,      // Center button - reset
+    input  logic [15:0] sw,        // SW[0]: enable, SW[1]: toggle input value
+    output logic [15:0] led,       // Status LEDs
+    output logic [6:0]  seg,       // 7-seg (directly show lower bits)
+    output logic        dp,
+    output logic [3:0]  an
 );
 
     // =========================================================================
-    // Switch Assignments
+    // Reset synchronizer (simple 2-FF synchronizer)
     // =========================================================================
-    // SW[0]     : Filter enable (gates valid_in)
-    // SW[3:1]   : Frequency select (000=1Hz to 111=1kHz)
-    // SW[7:4]   : Amplitude select (16 levels)
-    // SW[8]     : Input source (0=internal, 1=reserved)
-    // SW[11:9]  : Display slice select (which 16 bits of 64-bit output)
-    // SW[12]    : Display mode (0=output y_out, 1=input x_in)
-    // SW[15:13] : Reserved
-
-    logic        filter_en;
-    logic [2:0]  freq_sel;
-    logic [3:0]  amplitude_sel;
-    logic        input_source;
-    logic [2:0]  display_slice;
-    logic        display_mode;
-
-    assign filter_en     = sw[0];
-    assign freq_sel      = sw[3:1];
-    assign amplitude_sel = sw[7:4];
-    assign input_source  = sw[8];
-    assign display_slice = sw[11:9];
-    assign display_mode  = sw[12];
-
-    // =========================================================================
-    // Internal Signals
-    // =========================================================================
-    logic rst_n;                           // Active-low reset (from debounced button)
-    logic rst_pulse;                       // Reset pulse (unused but available)
-    logic tick_test;                       // Test pattern tick
-    logic clk_display;                     // Display refresh tick
-
-    logic signed [DATA_WIDTH-1:0] x_in;    // Filter input
-    logic signed [DATA_WIDTH-1:0] y_out;   // Filter output
-    logic valid_in;                        // Filter input valid
-    logic valid_out;                       // Filter output valid
-
-    logic signed [DATA_WIDTH-1:0] wave_out; // Square wave generator output
-    logic wave_state;                       // Square wave high/low state
-
-    logic [15:0] display_value;            // Value to show on 7-seg
-    logic        show_negative;            // Show negative indicator
-
-    // =========================================================================
-    // Power-On Reset Generator
-    // =========================================================================
-    // Generate a brief reset pulse at power-on for simulation compatibility
-    logic [7:0] por_counter = 8'hFF;  // Initialize to max for POR
-    logic por_rst_n;
+    logic rst_n, rst_sync1, rst_sync2;
 
     always_ff @(posedge clk) begin
-        if (por_counter > 0)
-            por_counter <= por_counter - 1;
+        rst_sync1 <= ~btnC;  // btnC is active-high, convert to active-low
+        rst_sync2 <= rst_sync1;
+    end
+    assign rst_n = rst_sync2;
+
+    // =========================================================================
+    // Clock Divider for IIR Filter (reduces timing pressure)
+    // =========================================================================
+    logic [$clog2(CLK_DIV)-1:0] clk_div_cnt;
+    logic clk_slow;
+
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            clk_div_cnt <= '0;
+            clk_slow <= 1'b0;
+        end else begin
+            if (clk_div_cnt == CLK_DIV - 1) begin
+                clk_div_cnt <= '0;
+                clk_slow <= ~clk_slow;
+            end else begin
+                clk_div_cnt <= clk_div_cnt + 1;
+            end
+        end
     end
 
-    assign por_rst_n = (por_counter == 0);
+    // Synchronize reset to slow clock domain
+    logic rst_slow_n, rst_slow_sync1, rst_slow_sync2;
+
+    always_ff @(posedge clk_slow or negedge rst_n) begin
+        if (!rst_n) begin
+            rst_slow_sync1 <= 1'b0;
+            rst_slow_sync2 <= 1'b0;
+        end else begin
+            rst_slow_sync1 <= 1'b1;
+            rst_slow_sync2 <= rst_slow_sync1;
+        end
+    end
+    assign rst_slow_n = rst_slow_sync2;
 
     // =========================================================================
-    // Reset Debouncer
+    // Simple Test Pattern Generator (runs on slow clock)
     // =========================================================================
-    // btnC is active-high on Basys 3, convert to active-low rst_n
-    logic btn_debounced;
+    // Alternates between two fixed values on each clock when enabled
+    logic signed [DATA_WIDTH-1:0] x_in;
+    logic signed [DATA_WIDTH-1:0] y_out;
+    logic valid_in;
+    logic valid_out;
+    logic toggle_state;
 
-    debounce #(
-        .CLK_FREQ(CLK_FREQ),
-        .DEBOUNCE_MS(20)
-    ) u_debounce (
-        .clk(clk),
-        .rst_n(por_rst_n),         // Use POR to initialize debouncer
-        .btn_in(btnC),
-        .btn_out(btn_debounced),
-        .btn_pulse(rst_pulse)
-    );
+    // Synchronize sw[0] to slow clock domain
+    logic sw0_sync1, sw0_sync2;
+    always_ff @(posedge clk_slow or negedge rst_slow_n) begin
+        if (!rst_slow_n) begin
+            sw0_sync1 <= 1'b0;
+            sw0_sync2 <= 1'b0;
+        end else begin
+            sw0_sync1 <= sw[0];
+            sw0_sync2 <= sw0_sync1;
+        end
+    end
 
-    assign rst_n = por_rst_n & ~btn_debounced;
+    // Input values (same as original testbench)
+    localparam logic signed [DATA_WIDTH-1:0] VAL_A = 32'sd25;
+    localparam logic signed [DATA_WIDTH-1:0] VAL_B = 32'sd50;
 
-    // =========================================================================
-    // Clock Divider
-    // =========================================================================
-    clk_divider #(
-        .CLK_FREQ(CLK_FREQ)
-    ) u_clk_divider (
-        .clk(clk),
-        .rst_n(rst_n),
-        .freq_sel(freq_sel),
-        .tick_test(tick_test),
-        .clk_display(clk_display)
-    );
+    always_ff @(posedge clk_slow or negedge rst_slow_n) begin
+        if (!rst_slow_n) begin
+            toggle_state <= 1'b0;
+        end else if (sw0_sync2) begin
+            toggle_state <= ~toggle_state;
+        end
+    end
 
-    // =========================================================================
-    // Square Wave Generator
-    // =========================================================================
-    square_wave_gen #(
-        .DATA_WIDTH(DATA_WIDTH)
-    ) u_square_wave_gen (
-        .clk(clk),
-        .rst_n(rst_n),
-        .tick(tick_test),
-        .amplitude_sel(amplitude_sel),
-        .wave_out(wave_out),
-        .wave_state(wave_state)
-    );
+    assign x_in = toggle_state ? VAL_B : VAL_A;
+    assign valid_in = sw0_sync2;  // SW[0] enables filter input
 
     // =========================================================================
-    // Input Selection and Valid Generation
-    // =========================================================================
-    // Currently only internal source is implemented
-    // input_source (SW[8]) reserved for future external input
-    assign x_in = wave_out;
-    assign valid_in = filter_en & tick_test;
-
-    // =========================================================================
-    // PLL IIR Filter (DUT)
+    // PLL IIR Filter (DUT) - runs on divided clock
     // =========================================================================
     pll_foa #(
         .DATA_WIDTH(DATA_WIDTH),
         .COEFF_WIDTH(COEFF_WIDTH)
     ) u_pll_foa (
-        .clk(clk),
-        .rst_n(rst_n),
+        .clk(clk_slow),
+        .rst_n(rst_slow_n),
         .valid_in(valid_in),
         .x_in(x_in),
         .valid_out(valid_out),
@@ -149,55 +112,98 @@ module basys3_pll_top #(
     );
 
     // =========================================================================
-    // Display Slice Selection
+    // Synchronize slow clock domain signals back to fast clock for display
     // =========================================================================
-    logic signed [DATA_WIDTH-1:0] display_source;
+    logic valid_out_sync1, valid_out_sync2;
+    logic toggle_sync1, toggle_sync2;
+    logic signed [DATA_WIDTH-1:0] y_out_sync;
 
-    // Select between input and output
-    assign display_source = display_mode ? x_in : y_out;
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            valid_out_sync1 <= 1'b0;
+            valid_out_sync2 <= 1'b0;
+            toggle_sync1 <= 1'b0;
+            toggle_sync2 <= 1'b0;
+            y_out_sync <= '0;
+        end else begin
+            valid_out_sync1 <= valid_out;
+            valid_out_sync2 <= valid_out_sync1;
+            toggle_sync1 <= toggle_state;
+            toggle_sync2 <= toggle_sync1;
+            y_out_sync <= y_out;  // Multi-bit sync okay for display (slowly changing)
+        end
+    end
 
-    // Select which 16-bit slice to display
+    // =========================================================================
+    // Simple LED Status
+    // =========================================================================
+    // LED[0]: Filter enabled (SW[0])
+    // LED[1]: Valid output
+    // LED[2]: Toggle state (shows alternating input)
+    // LED[3]: Reset active (inverted)
+    // LED[15:4]: Lower 12 bits of y_out
+
+    assign led[0] = sw[0];
+    assign led[1] = valid_out_sync2;
+    assign led[2] = toggle_sync2;
+    assign led[3] = ~rst_n;
+    assign led[15:4] = y_out_sync[11:0];
+
+    // =========================================================================
+    // Simple 7-Segment Display (directly show y_out bits)
+    // =========================================================================
+    // Display the integer part of y_out (bits [31:16])
+    logic [15:0] display_val;
+    assign display_val = y_out_sync[31:16];  // Show upper 16 bits (integer + some frac)
+
+    // Simple hex decoder for one digit
+    function automatic logic [6:0] hex_to_seg(input logic [3:0] hex);
+        case (hex)
+            4'h0: return 7'b1000000;
+            4'h1: return 7'b1111001;
+            4'h2: return 7'b0100100;
+            4'h3: return 7'b0110000;
+            4'h4: return 7'b0011001;
+            4'h5: return 7'b0010010;
+            4'h6: return 7'b0000010;
+            4'h7: return 7'b1111000;
+            4'h8: return 7'b0000000;
+            4'h9: return 7'b0010000;
+            4'hA: return 7'b0001000;
+            4'hB: return 7'b0000011;
+            4'hC: return 7'b1000110;
+            4'hD: return 7'b0100001;
+            4'hE: return 7'b0000110;
+            4'hF: return 7'b0001110;
+            default: return 7'b1111111;
+        endcase
+    endfunction
+
+    // Simple digit multiplexing counter
+    logic [1:0] digit_sel;
+    logic [19:0] refresh_counter;
+
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            refresh_counter <= '0;
+            digit_sel <= '0;
+        end else begin
+            refresh_counter <= refresh_counter + 1;
+            if (refresh_counter == 0)
+                digit_sel <= digit_sel + 1;
+        end
+    end
+
+    // Select digit and display
     always_comb begin
-        case (display_slice)
-            3'b000: display_value = display_source[15:0];    // Integer LSB
-            3'b001: display_value = display_source[31:16];   // Integer MSB
-            default: display_value = display_source[15:0];
+        case (digit_sel)
+            2'b00: begin an = 4'b1110; seg = hex_to_seg(display_val[3:0]);   end
+            2'b01: begin an = 4'b1101; seg = hex_to_seg(display_val[7:4]);   end
+            2'b10: begin an = 4'b1011; seg = hex_to_seg(display_val[11:8]);  end
+            2'b11: begin an = 4'b0111; seg = hex_to_seg(display_val[15:12]); end
         endcase
     end
 
-    // Show negative indicator for MSB slice
-    assign show_negative = display_source[DATA_WIDTH-1];
-
-    // =========================================================================
-    // Seven Segment Controller
-    // =========================================================================
-    seven_seg_controller u_seven_seg_ctrl (
-        .clk(clk),
-        .rst_n(rst_n),
-        .refresh_tick(clk_display),
-        .display_value(display_value),
-        .show_negative(show_negative),
-        .seg(seg),
-        .dp(dp),
-        .an(an)
-    );
-
-    // =========================================================================
-    // LED Status
-    // =========================================================================
-    led_status #(
-        .DATA_WIDTH(DATA_WIDTH)
-    ) u_led_status (
-        .clk(clk),
-        .rst_n(rst_n),
-        .filter_en(filter_en),
-        .valid_in(valid_in),
-        .valid_out(valid_out),
-        .y_out(y_out),
-        .amplitude_sel(amplitude_sel),
-        .freq_sel(freq_sel),
-        .wave_state(wave_state),
-        .led(led)
-    );
+    assign dp = 1'b1;  // Decimal point off
 
 endmodule
