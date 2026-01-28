@@ -1,0 +1,286 @@
+m255
+K4
+z2
+!s99 nomlopt
+!s11f MIXED_VERSIONS
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 d//wsl.localhost/Ubuntu/home/ayassin/Developer/simple_pll_trial/rtl
+T_opt
+!s110 1769582967
+V9QPOzP5_T39Vdj7Mah8QJ0
+04 17 4 work tb_basys3_pll_top fast 0
+=1-90e868d4f7c1-6979b176-126-22f4
+!s124 OEM100
+o-quiet -auto_acc_if_foreign -work TB_BASYS3_PLL -L TB_BASYS3_PLL +acc
+Z1 tCvgOpt 0
+n@_opt
+OL;O;2021.1;73
+vbasys3_pll_top
+Z2 DXx6 sv_std 3 std 0 22 9oUSJO;AeEaW`l:M@^WG92
+Z3 !s110 1769582965
+!i10b 1
+!s100 kANRld263Pi0=0VbIh`1<0
+IKb^3lWgVPLR;Y26YM<Rk^0
+S1
+R0
+w1769581008
+8fpga/basys3_pll_top.sv
+Ffpga/basys3_pll_top.sv
+!i122 2
+L0 3 207
+Z4 VDg1SIo80bB@j0V0VzS_@n1
+Z5 OL;L;2021.1;73
+r1
+!s85 0
+31
+Z6 !s108 1769582965.000000
+Z7 !s107 fpga/tb/tb_basys3_pll_top.sv|fpga/square_wave_gen.sv|fpga/seven_seg_controller.sv|fpga/led_status.sv|fpga/debounce.sv|fpga/clk_divider.sv|fpga/basys3_pll_top.sv|
+Z8 !s90 -reportprogress|300|-sv|-work|TB_BASYS3_PLL|+acc|fpga/basys3_pll_top.sv|fpga/clk_divider.sv|fpga/debounce.sv|fpga/led_status.sv|fpga/seven_seg_controller.sv|fpga/square_wave_gen.sv|fpga/tb/tb_basys3_pll_top.sv|
+!i113 0
+Z9 o-sv -work TB_BASYS3_PLL +acc -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+R1
+vclk_divider
+R2
+R3
+!i10b 1
+!s100 lmRH`jc;8I:mjKUX0D7do3
+I=Gi1<@SYhl1T:b19b_AA20
+S1
+R0
+Z10 w1769545970
+8fpga/clk_divider.sv
+Ffpga/clk_divider.sv
+!i122 2
+L0 3 75
+R4
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R1
+vdebounce
+R2
+R3
+!i10b 1
+!s100 m6VobPiNlThLD@8TC2a3?2
+I:7;TYY16;O4aReP::ddm21
+S1
+R0
+R10
+8fpga/debounce.sv
+Ffpga/debounce.sv
+!i122 2
+L0 3 64
+R4
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R1
+viir_time_diff_filter
+R2
+Z11 !s110 1769582821
+!i10b 1
+!s100 3DX8Uk@?TVB_b@6:>LP;C1
+Ie5UjVQ3NH2E6kA8JWGhHS0
+S1
+R0
+Z12 w1769451521
+Z13 8pll_foa_cl.sv
+Z14 Fpll_foa_cl.sv
+!i122 1
+L0 11 155
+R4
+R5
+r1
+!s85 0
+31
+Z15 !s108 1769582821.000000
+Z16 !s107 tb/tb_basys3_pll.sv|tb_pll_foa.sv|pll_foa_cl.sv|pll_foa.sv|
+Z17 !s90 -reportprogress|300|-sv|-work|TB_BASYS3_PLL|+acc|pll_foa.sv|pll_foa_cl.sv|tb_pll_foa.sv|tb/tb_basys3_pll.sv|
+!i113 0
+R9
+R1
+viir_time_diff_filter_single_cycle
+R2
+R11
+!i10b 1
+!s100 cd5HT@I3U?`1]ZgfCjH8<1
+IbADb]M]ZB`6QVT<cQ`d3Q0
+S1
+R0
+R12
+R13
+R14
+!i122 1
+L0 172 75
+R4
+R5
+r1
+!s85 0
+31
+R15
+R16
+R17
+!i113 0
+R9
+R1
+vled_status
+R2
+R3
+!i10b 1
+!s100 fZL?cBP:ZdiLF_BQm6N6b1
+I53YXJ>j8I63<D2o?Bf;i@0
+S1
+R0
+Z18 w1769545971
+8fpga/led_status.sv
+Ffpga/led_status.sv
+!i122 2
+L0 3 49
+R4
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R1
+vpll_foa
+R2
+R11
+!i10b 1
+!s100 6?d=NS28m9UX7kA_?XN<j0
+Iz@lzoc<OiUGA1=;GZm9h=1
+S1
+R0
+w1769580830
+8pll_foa.sv
+Fpll_foa.sv
+!i122 1
+L0 1 75
+R4
+R5
+r1
+!s85 0
+31
+R15
+R16
+R17
+!i113 0
+R9
+R1
+vseven_seg_controller
+R2
+R3
+!i10b 1
+!s100 X74U:_]A<KS6:5aW5OVc=2
+IEH_CQMe2:I[KJmA>G78fL3
+S1
+R0
+R18
+8fpga/seven_seg_controller.sv
+Ffpga/seven_seg_controller.sv
+!i122 2
+L0 4 95
+R4
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R1
+vsquare_wave_gen
+R2
+R3
+!i10b 1
+!s100 UN<2b010ILRz=Y`7L5J9n0
+IOfVNhJ^o9V<F^>Me?YzMh1
+S1
+R0
+R18
+8fpga/square_wave_gen.sv
+Ffpga/square_wave_gen.sv
+!i122 2
+L0 3 63
+R4
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R1
+vtb_basys3_pll_top
+R2
+R3
+!i10b 1
+!s100 Ac;k^UDL@d0Kie]3z3KRl1
+Imen:05?m[3bXj1XWjD7bE0
+S1
+R0
+w1769546738
+8fpga/tb/tb_basys3_pll_top.sv
+Ffpga/tb/tb_basys3_pll_top.sv
+!i122 2
+L0 4 220
+R4
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R1
+vtb_pll_foa
+R2
+R11
+!i10b 1
+!s100 X^KomCjG5Z0?dZCSFi0Cj0
+Io2[Fe7DGVZzRnTe^d3Fzk3
+S1
+R0
+w1769580882
+8tb_pll_foa.sv
+Ftb_pll_foa.sv
+!i122 1
+L0 1 41
+R4
+R5
+r1
+!s85 0
+31
+R15
+R16
+R17
+!i113 0
+R9
+R1

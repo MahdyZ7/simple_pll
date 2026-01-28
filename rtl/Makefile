@@ -63,6 +63,10 @@ do:
 	@echo "$(BLUE)>> Running simulation form sim.do file $(NC)"
 	$(VSIM) -do sim.do
 
+do_fpga:
+	@echo "$(BLUE)>> Running FPGA simulation form sim.do file for fpga $(NC)"
+	$(VSIM) -do fpga/sim.do
+
 icarus_compile:
 	mkdir -p build
 	@echo "$(BLUE)>> Compiling SystemVerilog files: $(SV_FILES) $(NC)"

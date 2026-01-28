@@ -1,10 +1,10 @@
 module tb_pll_foa;
     logic clk, rst_n, valid_in;
-    logic [63:0] x_in, y_out;
+    logic [31:0] x_in, y_out;
     logic valid_out;
 
 
-    pll_foa #(.DATA_WIDTH(64)) dut (
+    pll_foa #(.DATA_WIDTH(32)) dut (
         .clk, .rst_n, .valid_in, .x_in, .valid_out, .y_out
     );
 
@@ -24,16 +24,16 @@ module tb_pll_foa;
     always #1 clk = ~clk;  //  clock
 	// always #200 x_in = ~x_in; // Change input every 20 time units
 	always repeat (100) begin
-		if (x_in == 64'd25)
-			x_in = 64'd50;
+		if (x_in == 32'd25)
+			x_in = 32'd50;
 		else
-			x_in = 64'd25;
+			x_in = 32'd25;
 		#1000;
 	end
 
     initial begin
 		$dumpvars;
-        clk = 0; rst_n = 0; valid_in = 0; x_in = 64'd25;
+        clk = 0; rst_n = 0; valid_in = 0; x_in = 32'd25;
         #20 rst_n = 1;
 		valid_in = 1;
     	#10000 $finish;

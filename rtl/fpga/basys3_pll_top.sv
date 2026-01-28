@@ -2,8 +2,8 @@
 // Target: Xilinx Artix-7 (XC7A35T-1CPG236C)
 module basys3_pll_top #(
     parameter CLK_FREQ = 100_000_000,  // 100 MHz Basys 3 clock
-    parameter DATA_WIDTH = 64,
-    parameter COEFF_WIDTH = 27
+    parameter DATA_WIDTH = 32,
+    parameter COEFF_WIDTH = 32
 ) (
     // Clock and Reset
     input  logic        clk,           // 100 MHz oscillator
@@ -159,14 +159,8 @@ module basys3_pll_top #(
     // Select which 16-bit slice to display
     always_comb begin
         case (display_slice)
-            3'b000: display_value = display_source[15:0];    // Fractional LSB
-            3'b001: display_value = display_source[31:16];   // Fractional MSB
-            3'b010: display_value = display_source[47:32];   // Integer LSB
-            3'b011: display_value = display_source[63:48];   // Integer MSB / Sign
-            3'b100: display_value = display_source[15:0];    // Repeat pattern
-            3'b101: display_value = display_source[31:16];
-            3'b110: display_value = display_source[47:32];
-            3'b111: display_value = display_source[63:48];
+            3'b000: display_value = display_source[15:0];    // Integer LSB
+            3'b001: display_value = display_source[31:16];   // Integer MSB
             default: display_value = display_source[15:0];
         endcase
     end
