@@ -29,7 +29,8 @@ module pll_foa #(
 
 	// Intermediate product accumulators (wider to prevent overflow)
 	// logic signed [(DATA_WIDTH+COEFF_WIDTH)-1:0] acc_x, acc_y;
-	logic signed [DATA_WIDTH+COEFF_WIDTH:0] temp_sum;  // Extra bits for final scaling
+	logic signed [DATA_WIDTH+COEFF_WIDTH:0] temp_sum_x;  // Extra bits for final scaling
+	logic signed [DATA_WIDTH+COEFF_WIDTH:0] temp_sum_y;  // Extra bits for final scaling
 
 	// Input valid pipeline
 
@@ -39,9 +40,9 @@ module pll_foa #(
 		// x_in and x_delay are Q16, coefficients are Q16
 		// Feedforward: Q24 * Q24 = Q48, shift by 24 to get Q24
 		// Feedback: Q24 * Q24 = Q48, shift by 24 to get Q24
-		temp_sum = ((c0 * x_in)) + ((c1 * x_delay[0])) + ((c2 * x_delay[1])) + ((c3 * x_delay[2]))
-				 + ((cy1 * y_delay[0]) >>> FRAC_WIDTH) + ((cy2 * y_delay[1]) >>> FRAC_WIDTH) + ((cy3 * y_delay[2]) >>> FRAC_WIDTH);
-		y_out = temp_sum >>> FRAC_WIDTH;  // Output is Q16
+		temp_sum_x = (c0 * x_in) + (c1 * x_delay[0]) + (c2 * x_delay[1]) + (c3 * x_delay[2]);
+		temp_sum_y = ((cy1 * y_delay[0]) + (cy2 * y_delay[1]) + (cy3 * y_delay[2]) + (1 << (FRAC_WIDTH-1))) >>> FRAC_WIDTH;
+		y_out = (temp_sum_x + temp_sum_y) >>> FRAC_WIDTH;  // Output is Q16
 	end
 
 	always_ff @(posedge clk or negedge rst_n) begin
@@ -63,7 +64,7 @@ module pll_foa #(
 			// Compute y and shift y delays
 			if (valid_in) begin
 				// Shift y delays
-				y_delay[0] <= temp_sum;
+				y_delay[0] <= temp_sum_x + temp_sum_y;
 				y_delay[1] <= y_delay[0];
 				y_delay[2] <= y_delay[1];
 			end

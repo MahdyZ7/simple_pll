@@ -152,7 +152,7 @@ module basys3_pll_top #(
 
     // Simple digit multiplexing counter
     logic [1:0] digit_sel;
-    logic [19:0] refresh_counter;
+    logic [17:0] refresh_counter;  // Reduced from 20 to 18 bits for faster refresh (~400 Hz)
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -165,14 +165,28 @@ module basys3_pll_top #(
         end
     end
 
-    // Select digit and display
+    // Select digit and display (registered output to reduce glitches)
+    logic [3:0] an_next;
+    logic [6:0] seg_next;
+    
     always_comb begin
         case (digit_sel)
-            2'b00: begin an = 4'b1110; seg = hex_to_seg(display_val[3:0]);   end
-            2'b01: begin an = 4'b1101; seg = hex_to_seg(display_val[7:4]);   end
-            2'b10: begin an = 4'b1011; seg = hex_to_seg(display_val[11:8]);  end
-            2'b11: begin an = 4'b0111; seg = hex_to_seg(display_val[15:12]); end
+            2'b00: begin an_next = 4'b1110; seg_next = hex_to_seg(display_val[3:0]);   end
+            2'b01: begin an_next = 4'b1101; seg_next = hex_to_seg(display_val[7:4]);   end
+            2'b10: begin an_next = 4'b1011; seg_next = hex_to_seg(display_val[11:8]);  end
+            2'b11: begin an_next = 4'b0111; seg_next = hex_to_seg(display_val[15:12]); end
         endcase
+    end
+    
+    // Register outputs to avoid glitches during transitions
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            an <= 4'b1111;
+            seg <= 7'b1111111;
+        end else begin
+            an <= an_next;
+            seg <= seg_next;
+        end
     end
 
     assign dp = 1'b1;  // Decimal point off

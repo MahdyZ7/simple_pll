@@ -61,7 +61,7 @@ cli: compile
 
 do:
 	@echo "$(BLUE)>> Running simulation form sim.do file $(NC)"
-	$(VSIM) -do sim.do&
+	$(VSIM) -do sim.do
 
 do_fpga:
 	@echo "$(BLUE)>> Running FPGA simulation form sim.do file for fpga $(NC)"
@@ -113,7 +113,7 @@ help:
 
 # Clean up
 clean:
-	rm -rf $(LIB_NAME) transcript *.wlf build *.vcd
+	rm -rf $(LIB_NAME) transcript *.wlf build *.vcd wlft*
 
 re: clean all
 
