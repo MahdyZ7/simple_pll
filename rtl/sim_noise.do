@@ -6,27 +6,30 @@ vlib TB_PLL_FOA
 vmap TB_PLL_FOA TB_PLL_FOA
 
 # Compile all SystemVerilog files
-vlog -sv -work TB_PLL_FOA +acc pll_foa.sv tb_pll_foa.sv
+vlog -sv -work TB_PLL_FOA +acc pll_foa.sv tb_pll_foa_stdNoise.sv
 
 # Load simulation with full visibility
-vsim -voptargs=+acc -L TB_PLL_FOA TB_PLL_FOA.tb_pll_foa
+vsim -voptargs=+acc -L TB_PLL_FOA TB_PLL_FOA.tb_pll_foa_stdNoise
 
 # Log all signals recursively
 log -r /*
 
 # Add top-level testbench signals
 add wave -divider "Control Signals"
-add wave /tb_pll_foa/clk
-add wave /tb_pll_foa/rst_n
-add wave /tb_pll_foa/valid_in
-add wave /tb_pll_foa/valid_out
-
+add wave /tb_pll_foa_stdNoise/clk
+add wave /tb_pll_foa_stdNoise/rst_n
+add wave /tb_pll_foa_stdNoise/valid_in
+add wave /tb_pll_foa_stdNoise/valid_out
 # Add input/output as analog
 add wave -divider "Input/Output (Analog)"
-add wave -format analog-step -height 80 -radix signed /tb_pll_foa/x_in
-add wave -format analog-step -height 80 -radix signed /tb_pll_foa/y_out
-
-# # Add internal DUT signals
+add wave -format analog-step -height 80 -radix signed /tb_pll_foa_stdNoise/x_in
+add wave -format analog-step -height 80 -radix signed /tb_pll_foa_stdNoise/y_out
+# Add jitter difference signal
+add wave -divider "Jitter Difference"
+add wave /tb_pll_foa_stdNoise/toggle
+add wave /tb_pll_foa_stdNoise/toggle_jitter
+add wave -format analog-step -height 3 -radix signed /tb_pll_foa_stdNoise/jitter_diff
+# Add internal DUT signals
 # add wave -divider "DUT Internals"
 # add wave -format analog-step -height 60 -radix signed /tb_pll_foa/dut/temp_sum
 

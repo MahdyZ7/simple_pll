@@ -1,0 +1,63 @@
+# Current time Wed Jan 28 12:10:40 2026
+# Program = vish
+# Id = "2021.1"
+# Version = "2021.01"
+# Date = "Jan 19 2021"
+# Platform = win64
+
+Exception c0000005 has occurred at address 40283a53. Traceback:
+# 0    0x40283a53: 'Mtirpc_Init + 0xfc063'
+# 1    0x40284d56: 'Mtirpc_Init + 0xfd366'
+# 2    0x4027d1f7: 'Mtirpc_Init + 0xf5807'
+# 3    0x4026912b: 'Mtirpc_Init + 0xe173b'
+# 4    0x40264f9f: 'Mtirpc_Init + 0xdd5af'
+# 5    0x40264ab7: 'Mtirpc_Init + 0xdd0c7'
+# 6    0x40264951: 'Mtirpc_Init + 0xdcf61'
+# 7    0x402d0e0a: 'Mtirpc_Init + 0x14941a'
+# 8    0x402d0a7d: 'Mtirpc_Init + 0x14908d'
+# 9    0x402e069d: 'Mtirpc_Init + 0x158cad'
+# 10   0x402e2b92: 'Mtirpc_Init + 0x15b1a2'
+# 11   0x402e32e2: 'Mtirpc_Init + 0x15b8f2'
+# 12   0x5d177103: 'TclNRRunCallbacks + 0x63'
+# 13   0x2d320d9a: 'Itcl_EvalMemberCode + 0x3ba'
+# 14   0x2d321f5b: 'Itcl_ExecMethod + 0x23b'
+# 15   0x2d329a19: 'Itcl_EvalArgs + 0x1c9'
+# 16   0x2d324cf1: 'Itcl_HandleInstance + 0x2c1'
+# 17   0x5d177103: 'TclNRRunCallbacks + 0x63'
+# 18   0x4015edcb: '<unknown (@0x4015edcb)>'
+# 19   0x4015d7a9: '<unknown (@0x4015d7a9)>'
+# 20   0x4015629e: '<unknown (@0x4015629e)>'
+# 21   0x401560ba: '<unknown (@0x401560ba)>'
+# 22   0x5d26217c: 'TclServiceIdle + 0x6c'
+# 23   0x5d22a9f3: 'Tcl_DoOneEvent + 0x193'
+# 24   0x5aa2a02e: 'TkGetDisplayOf + 0x248e'
+# 25   0x5d177103: 'TclNRRunCallbacks + 0x63'
+# 26   0x2d320d9a: 'Itcl_EvalMemberCode + 0x3ba'
+# 27   0x2d321f5b: 'Itcl_ExecMethod + 0x23b'
+# 28   0x2d329a19: 'Itcl_EvalArgs + 0x1c9'
+# 29   0x2d324cf1: 'Itcl_HandleInstance + 0x2c1'
+# 30   0x5d177103: 'TclNRRunCallbacks + 0x63'
+# 31   0x2d320d9a: 'Itcl_EvalMemberCode + 0x3ba'
+# 32   0x2d321f5b: 'Itcl_ExecMethod + 0x23b'
+# 33   0x2d329a19: 'Itcl_EvalArgs + 0x1c9'
+# 34   0x2d324cf1: 'Itcl_HandleInstance + 0x2c1'
+# 35   0x5d177103: 'TclNRRunCallbacks + 0x63'
+# 36   0x5d178974: 'Tcl_EvalEx + 0xa34'
+# 37   0x5d177f68: 'Tcl_EvalEx + 0x28'
+# 38   0x5a9f431a: 'Tk_BindEvent + 0x91a'
+# 39   0x5aa2bd41: 'TkBindEventProc + 0x291'
+# 40   0x5aa3c614: 'Tk_HandleEvent + 0x2f4'
+# 41   0x5aae337e: 'Tk_MapWindow + 0x12e'
+# 42   0x5aa97a4d: 'Tk_AddOption + 0x314d'
+# 43   0x5d26217c: 'TclServiceIdle + 0x6c'
+# 44   0x5d22a9f3: 'Tcl_DoOneEvent + 0x193'
+# 45   0x5aa3aee5: 'Tk_MainLoop + 0x25'
+# 46   0x5aa7d282: 'Tk_MainEx + 0x932'
+# 47   0x401ab032: 'Mtirpc_Init + 0x23642'
+# 48   0x401adc14: 'Mtirpc_Init + 0x26224'
+# 49   0x40771eb0: 'Tclsqlite3_Init + 0x1c000'
+# 50   0x4160e8d7: 'BaseThreadInitThunk + 0x17'
+# 51   0x4356c53c: 'RtlUserThreadStart + 0x2c'
+StackWalk failed 0
+# End of Stack Trace
+

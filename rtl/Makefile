@@ -63,6 +63,10 @@ do:
 	@echo "$(BLUE)>> Running simulation form sim.do file $(NC)"
 	$(VSIM) -do sim.do
 
+do_fpga:
+	@echo "$(BLUE)>> Running FPGA simulation form sim.do file for fpga $(NC)"
+	$(VSIM) -do fpga/sim.do&
+
 icarus_compile:
 	mkdir -p build
 	@echo "$(BLUE)>> Compiling SystemVerilog files: $(SV_FILES) $(NC)"
@@ -109,9 +113,86 @@ help:
 
 # Clean up
 clean:
-	rm -rf $(LIB_NAME) transcript *.wlf build *.vcd
+	rm -rf $(LIB_NAME) transcript *.wlf build *.vcd wlft*
 
 re: clean all
 
+# ============================================================================
+# FPGA (Basys 3) Targets
+# ============================================================================
+
+# FPGA source files
+FPGA_SRC := pll_foa.sv \
+            fpga/clk_divider.sv \
+            fpga/debounce.sv \
+            fpga/square_wave_gen.sv \
+            fpga/seven_seg_controller.sv \
+            fpga/led_status.sv \
+            fpga/basys3_pll_top.sv
+
+FPGA_TB := fpga/tb/tb_basys3_pll_top.sv
+FPGA_XDC := fpga/constraints/basys3_pll.xdc
+FPGA_TOP := basys3_pll_top
+FPGA_TB_TOP := tb_basys3_pll_top
+
+# Vivado settings
+VIVADO := vivado
+VIVADO_PROJECT := basys3_pll
+VIVADO_PART := xc7a35tcpg236-1
+
+# Icarus FPGA simulation
+fpga_icarus: fpga_icarus_compile fpga_icarus_run
+
+fpga_icarus_compile:
+	mkdir -p build/fpga
+	@echo "$(BLUE)>> Compiling FPGA testbench with Icarus $(NC)"
+	$(ICARUS) -Wall -g2012 -o build/fpga/$(FPGA_TB_TOP) $(FPGA_SRC) $(FPGA_TB)
+
+fpga_icarus_run: fpga_icarus_compile
+	cd build/fpga && ./$(FPGA_TB_TOP)
+	@if [ -f "./build/fpga/tb_basys3_pll_top.vcd" ]; then \
+		cd build/fpga && $(GTKWAVE) tb_basys3_pll_top.vcd & \
+	else \
+		echo "$(RED) No VCD file found $(NC)"; \
+	fi
+
+# Vivado project creation
+vivado_project:
+	@echo "$(BLUE)>> Creating Vivado project $(NC)"
+	mkdir -p build/vivado
+	cd build/vivado && $(VIVADO) -mode batch -source ../../fpga/scripts/create_project.tcl
+
+# Vivado synthesis (requires project)
+vivado_synth:
+	@echo "$(BLUE)>> Running Vivado synthesis $(NC)"
+	cd build/vivado && $(VIVADO) -mode batch -source ../../fpga/scripts/run_synth.tcl
+
+# Vivado implementation and bitstream
+vivado_impl:
+	@echo "$(BLUE)>> Running Vivado implementation $(NC)"
+	cd build/vivado && $(VIVADO) -mode batch -source ../../fpga/scripts/run_impl.tcl
+
+# Quick Vivado non-project flow
+vivado_quick:
+	@echo "$(BLUE)>> Running Vivado non-project flow $(NC)"
+	mkdir -p build/vivado
+	cd build/vivado && $(VIVADO) -mode batch -source ../../fpga/scripts/quick_build.tcl
+
+# Open Vivado GUI
+vivado_gui:
+	@echo "$(BLUE)>> Opening Vivado GUI $(NC)"
+	cd build/vivado && $(VIVADO) $(VIVADO_PROJECT).xpr &
+
+# Program FPGA
+vivado_program:
+	@echo "$(BLUE)>> Programming FPGA $(NC)"
+	cd build/vivado && $(VIVADO) -mode batch -source ../../fpga/scripts/program.tcl
+
+# FPGA clean
+fpga_clean:
+	rm -rf build/fpga build/vivado .Xil *.jou *.log
+
 .PHONY: all create_lib map_lib compile simulate cli do icarus_compile \
-	icarus_run wave help clean re
+	icarus_run wave help clean re \
+	fpga_icarus fpga_icarus_compile fpga_icarus_run \
+	vivado_project vivado_synth vivado_impl vivado_quick vivado_gui vivado_program fpga_clean

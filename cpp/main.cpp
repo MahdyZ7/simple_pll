@@ -11,16 +11,16 @@ typedef long FixedType;
 // typedef int FixedType;
 
 int test1(void);
-int pll_comaprison(int frac_size);
+int pll_comparison(int frac_size);
 std::string fixed_to_string(Fixed<FixedType> const &n);
 void print_cofficients(int frac_size);
 
 int main(void)
 {
 	// return test1();
-	// for (int i = 8; i <= 33; i += 1)
-	// 	pll_comaprison(i);
-	print_cofficients(frac_size);
+	for (int i = 8; i <= 33; i += 1)
+		pll_comparison(i);
+	// print_cofficients(frac_size);
 	return 0;
 }
 
@@ -59,7 +59,7 @@ int test1(void)
 	return 0;
 }
 
-int pll_comaprison(int frac_size)
+int pll_comparison(int frac_size)
 {
 	FixedType zero = 0;
 	int loop_count = 200;
