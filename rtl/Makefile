@@ -65,7 +65,7 @@ do:
 
 do_fpga:
 	@echo "$(BLUE)>> Running FPGA simulation form sim.do file for fpga $(NC)"
-	$(VSIM) -do fpga/sim.do&
+	$(VSIM) -do fpga/sim.do
 
 icarus_compile:
 	mkdir -p build

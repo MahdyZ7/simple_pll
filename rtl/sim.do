@@ -6,7 +6,7 @@ vlib TB_PLL_FOA
 vmap TB_PLL_FOA TB_PLL_FOA
 
 # Compile all SystemVerilog files
-vlog -sv -work TB_PLL_FOA +acc pll_foa.sv tb_pll_foa.sv
+vlog -sv -work TB_PLL_FOA +acc pll_foa.sv fpga/clk_divider.sv tb_pll_foa.sv
 
 # Load simulation with full visibility
 vsim -voptargs=+acc -L TB_PLL_FOA TB_PLL_FOA.tb_pll_foa
@@ -17,6 +17,8 @@ log -r /*
 # Add top-level testbench signals
 add wave -divider "Control Signals"
 add wave /tb_pll_foa/clk
+add wave /tb_pll_foa/clock_slow
+add wave /tb_pll_foa/clock_slow_jittered
 add wave /tb_pll_foa/rst_n
 add wave /tb_pll_foa/valid_in
 add wave /tb_pll_foa/valid_out
