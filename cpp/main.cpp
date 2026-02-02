@@ -4,7 +4,7 @@
 #include <iostream>
 const double x_coff[] = {0.0742, -0.0614, -0.0737, 0.0620};
 const double y_coff[] = {2.7448, -2.5169, 0.7710};
-const int frac_size = 16;
+const int frac_size = 24;
 
 // Change this to switch between long and int for Fixed point type
 typedef long FixedType;
@@ -18,9 +18,9 @@ void print_cofficients(int frac_size);
 int main(void)
 {
 	// return test1();
-	for (int i = 8; i <= 33; i += 1)
-		pll_comparison(i);
-	// print_cofficients(frac_size);
+	// for (int i = 8; i <= 33; i += 1)
+	// 	pll_comparison(i);
+	print_cofficients(frac_size);
 	return 0;
 }
 

@@ -3,7 +3,7 @@
 
 module tb_basys3_pll_top;
 
-    localparam CLK_PERIOD = 10;  // 100 MHz
+    localparam CLK_PERIOD = 2;  // 100 MHz
 
     // DUT Signals
     logic        clk;
@@ -13,6 +13,10 @@ module tb_basys3_pll_top;
     logic [6:0]  seg;
     logic        dp;
     logic [3:0]  an;
+	logic        clk_out;
+	logic        clk_out_slow;
+	logic        clk_out_jittered;
+	logic        pll_out;
 
     // Instantiate DUT
     basys3_pll_top dut (
@@ -22,7 +26,11 @@ module tb_basys3_pll_top;
         .led(led),
         .seg(seg),
         .dp(dp),
-        .an(an)
+        .an(an),
+		.clk_out(clk_out),
+		.clk_out_slow(clk_out_slow),
+		.clk_out_jittered(clk_out_jittered),
+		.pll_out(pll_out)
     );
 
     // Clock generation
@@ -48,6 +56,9 @@ module tb_basys3_pll_top;
         // Enable filter
         $display("\nEnabling filter (SW[0]=1)");
         sw[0] = 1;
+		sw[1] = 0; // Start with clean output
+		sw[2] = 1; // enable muti level x_in toggling
+		sw[5:3] = 3'b111; // set fastest clock
 
         // Run for several cycles and observe output
         repeat(20) begin
@@ -56,7 +67,7 @@ module tb_basys3_pll_top;
                      $signed(dut.x_in) >>> 24,
                      $signed(dut.y_out) >>> 24,
                      dut.valid_out,
-                     dut.toggle_state);
+                     dut.toggle);
         end
 
         // Disable filter

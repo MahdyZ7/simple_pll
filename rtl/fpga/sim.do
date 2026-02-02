@@ -13,17 +13,17 @@ vsim -voptargs=+acc -L TB_BASYS3_PLL TB_BASYS3_PLL.tb_basys3_pll_top
 # Log all signals recursively
 log -r /*
 
-# # Add top-level testbench signals
-# add wave -divider "Control Signals"
-# add wave /tb_basys3_pll_top/clk
-# add wave /tb_basys3_pll_top/rst_n
-# add wave /tb_basys3_pll_top/valid_in
-# add wave /tb_basys3_pll_top/valid_out
+# Add top-level testbench signals
+add wave -divider "Control Signals"
+add wave /tb_basys3_pll_top/clk
+add wave /tb_basys3_pll_top/btnC
+add wave /tb_basys3_pll_top/led
+# add wave /tb_basys3_pll_top/led[1]
 
-# # Add input/output as analog
-# add wave -divider "Input/Output (Analog)"
-# add wave -format analog-step -height 80 -radix signed /tb_basys3_pll_top/x_in
-# add wave -format analog-step -height 80 -radix signed /tb_basys3_pll_top/y_out
+# Add input/output as analog
+add wave -divider "Input/Output (Analog)"
+add wave -format analog-step -height 80 -radix signed /tb_basys3_pll_top/dut/x_in
+add wave -format analog-step -height 80 -radix signed /tb_basys3_pll_top/dut/y_out
 
 # # Add internal DUT signals
 # add wave -divider "DUT Internals"

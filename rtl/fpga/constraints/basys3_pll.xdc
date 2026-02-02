@@ -74,6 +74,14 @@ set_property -dict { PACKAGE_PIN W4   IOSTANDARD LVCMOS33 } [get_ports {an[3]}]
 set_property -dict { PACKAGE_PIN U18  IOSTANDARD LVCMOS33 } [get_ports btnC]
 
 ## ============================================================================
+## output JA Header for Clock Outputs
+## ============================================================================
+set_property -dict { PACKAGE_PIN J1  IOSTANDARD LVCMOS33 } [get_ports clk_out]
+set_property -dict { PACKAGE_PIN L2  IOSTANDARD LVCMOS33 } [get_ports clk_out_slow]
+set_property -dict { PACKAGE_PIN J2  IOSTANDARD LVCMOS33 } [get_ports clk_out_jittered]
+set_property -dict { PACKAGE_PIN G2  IOSTANDARD LVCMOS33 } [get_ports pll_out]
+
+## ============================================================================
 ## Configuration Options
 ## ============================================================================
 set_property CONFIG_VOLTAGE 3.3 [current_design]

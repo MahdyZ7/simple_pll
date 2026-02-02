@@ -3,7 +3,7 @@
 module basys3_pll_top #(
     parameter DATA_WIDTH = 32,
     parameter COEFF_WIDTH = 32,
-    parameter CLK_DIV = 1048576         // Clock divider: 100MHz / 4 = 25MHz for filter
+    parameter CLK_DIV = 1         // Clock divider: 100MHz / 4 = 25MHz for filter
 ) (
     input  logic        clk,       // 100 MHz oscillator
     input  logic        btnC,      // Center button - reset
@@ -11,7 +11,11 @@ module basys3_pll_top #(
     output logic [15:0] led,       // Status LEDs
     output logic [6:0]  seg,       // 7-seg (directly show lower bits)
     output logic        dp,
-    output logic [3:0]  an
+    output logic [3:0]  an,
+	output logic 	    clk_out,			// Output clock for measurement;
+	output logic 	    clk_out_slow,		// Output slower clock for measurement;
+	output logic 	    clk_out_jittered,   // Output jittered clock for measurement;
+	output logic 	    pll_out				// Output of PLL filter for measurement
 );
 
     // =========================================================================
@@ -29,16 +33,16 @@ module basys3_pll_top #(
     // Clock Divider for IIR Filter (reduces timing pressure)
     // =========================================================================
     logic [$clog2(CLK_DIV)-1:0] clk_div_cnt;
-    logic clk_slow;
+    logic clk_half;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             clk_div_cnt <= '0;
-            clk_slow <= 1'b0;
+            clk_half <= 1'b0;
         end else begin
             if (clk_div_cnt == CLK_DIV - 1) begin
                 clk_div_cnt <= '0;
-                clk_slow <= ~clk_slow;
+                clk_half <= ~clk_half;
             end else begin
                 clk_div_cnt <= clk_div_cnt + 1;
             end
@@ -53,7 +57,9 @@ module basys3_pll_top #(
     logic signed [DATA_WIDTH-1:0] y_out;
     logic valid_in;
     logic valid_out;
-    logic toggle_state;
+    // logic toggle_state;
+	logic toggle;
+	logic clk_slow, clk_slow_jittered;
 
     // Synchronize sw[0] to slow clock domain
     logic sw0_sync1, sw0_sync2;
@@ -70,25 +76,41 @@ module basys3_pll_top #(
     // Input values (same as original testbench)
     localparam logic signed [DATA_WIDTH-1:0] VAL_A = 32'sd25;
     localparam logic signed [DATA_WIDTH-1:0] VAL_B = 32'sd50;
-	localparam logic [31:0] input_period = 32'd0100;
-	logic [31:0] input_counter;
+	// localparam logic [31:0] input_period = 32'd0100;
+	// logic [31:0] input_counter;
 
-    always_ff @(posedge clk_slow or negedge rst_n) begin
-        if (!rst_n) begin
-            toggle_state <= 1'b0;
-			input_counter <= 32'd0;
-        end else if (sw0_sync2) begin
-			if (input_counter < input_period - 1) begin
-				input_counter <= input_counter + 1;
-			end else begin
-				input_counter <= 32'd0;
-				toggle_state <= ~toggle_state;
-			end
-        end
-    end
+    // always_ff @(posedge clk_slow or negedge rst_n) begin
+    //     if (!rst_n) begin
+    //         toggle_state <= 1'b0;
+	// 		input_counter <= 32'd0;
+    //     end else if (sw0_sync2) begin
+	// 		if (input_counter < input_period - 1) begin
+	// 			input_counter <= input_counter + 1;
+	// 		end else begin
+	// 			input_counter <= 32'd0;
+	// 			toggle_state <= ~toggle_state;
+	// 		end
+    //     end
+    // end
 
-    assign x_in = toggle_state ? VAL_B : VAL_A;
+    // assign x_in = toggle_state ? VAL_B : VAL_A;
     assign valid_in = sw0_sync2;  // SW[0] enables filter input
+
+	// =========================================================================
+	// Clock Divider Instance for Jittered Clock (for testing)
+	// =========================================================================
+	clk_divider #(
+		.CLK_FREQ(100_000_000)
+	) clk_div_inst (
+		.clk(clk_half),
+		.rst_n(rst_n),
+		.freq_sel(sw[5:3]),		// Use SW[5:3] for frequency selection
+		.clk_slow(clk_slow),
+		.clk_slow_jittered(clk_slow_jittered)
+	);
+
+	assign toggle = sw[1] ? clk_slow_jittered : clk_slow;
+	assign x_in = sw[2] ? (toggle ? VAL_B : VAL_A) : toggle;
 
     // =========================================================================
     // PLL IIR Filter (DUT) - runs on divided clock
@@ -97,7 +119,7 @@ module basys3_pll_top #(
         .DATA_WIDTH(DATA_WIDTH),
         .COEFF_WIDTH(COEFF_WIDTH)
     ) u_pll_foa (
-        .clk(clk_slow),
+        .clk(clk_half),
         .rst_n(rst_n),
         .valid_in(valid_in),
         .x_in(x_in),
@@ -115,10 +137,12 @@ module basys3_pll_top #(
     // LED[15:4]: Lower 12 bits of y_out
 
     assign led[0] = sw[0];
-    assign led[1] = valid_out;
-    assign led[2] = toggle_state;
-    assign led[3] = ~rst_n;
-    assign led[15:4] = y_out[11:0];
+    assign led[1] = ~rst_n;
+    assign led[2] = valid_out;
+    assign led[3] = toggle;
+    assign led[4] = clk_slow;
+    assign led[5] = clk_slow_jittered;
+    assign led[15:6] = y_out[9:0];
 
     // =========================================================================
     // Simple 7-Segment Display (directly show y_out bits)
@@ -190,5 +214,9 @@ module basys3_pll_top #(
     end
 
     assign dp = 1'b1;  // Decimal point off
+	assign clk_out = clk;
+	assign clk_out_slow = clk_slow;
+	assign clk_out_jittered = clk_slow_jittered;
+	assign pll_out = y_out[0];
 
 endmodule
