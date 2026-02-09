@@ -6,7 +6,7 @@ vlib TB_PLL_FOA
 vmap TB_PLL_FOA TB_PLL_FOA
 
 # Compile all SystemVerilog files
-vlog -sv -work TB_PLL_FOA +acc pll_foa.sv fpga/clk_divider.sv tb_pll_foa.sv
+vlog -sv -work TB_PLL_FOA +acc pll_foa.sv pll_foa_2.sv pll_cfoa.sv pll_csoa.sv pll_soa.sv fpga/clk_divider.sv tb_pll_foa.sv
 
 # Load simulation with full visibility
 vsim -voptargs=+acc -L TB_PLL_FOA TB_PLL_FOA.tb_pll_foa
@@ -21,12 +21,17 @@ add wave /tb_pll_foa/clock_slow
 add wave /tb_pll_foa/clock_slow_jittered
 add wave /tb_pll_foa/rst_n
 add wave /tb_pll_foa/valid_in
-add wave /tb_pll_foa/valid_out
+add wave /tb_pll_foa/valid_out_foa
 
 # Add input/output as analog
 add wave -divider "Input/Output (Analog)"
 add wave -format analog-step -height 80 -radix signed /tb_pll_foa/x_in
-add wave -format analog-step -height 80 -radix signed /tb_pll_foa/y_out
+add wave -format analog-step -height 80 -radix signed /tb_pll_foa/y_out_foa
+add wave -format analog-step -height 80 -radix signed /tb_pll_foa/y_out_foa2
+add wave -format analog-step -height 80 -radix signed /tb_pll_foa/y_out_cfoa
+add wave -format analog-step -height 80 -radix signed /tb_pll_foa/y_out_csoa
+add wave -format analog-step -height 80 -radix signed /tb_pll_foa/y_out_soa
+
 
 # # Add internal DUT signals
 # add wave -divider "DUT Internals"

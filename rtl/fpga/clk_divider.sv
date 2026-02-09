@@ -2,7 +2,7 @@
 // Generates variable frequency ticks for square wave and display refresh
 module clk_divider #(
     parameter CLK_FREQ = 100_000_000,  // 100 MHz input clock
-	parameter real JITTER_VARIANCE = 10.0   // Jitter variance in time units²
+	parameter int JITTER_BITS = 6      // Jitter magnitude in bits (±2^JITTER_BITS cycles)
 ) (
     input  logic        clk,
     input  logic        rst_n,
@@ -52,39 +52,45 @@ module clk_divider #(
         end
     end
 
-	// jittered clock generation for testing
-	// Gaussian random generator using Box-Muller transform
-	function automatic real gaussian_rand(real mean, real stddev);                                                                                  
-		real u1, u2, z0;                                                                                                                            
-		u1 = $urandom() / 4294967296.0;  // Uniform [0,1)                                                                                           
-		u2 = $urandom() / 4294967296.0;                                                                                                             
-		if (u1 < 1e-10) u1 = 1e-10;      // Avoid log(0)                                                                                            
-		z0 = $sqrt(-2.0 * $ln(u1)) * $cos(2.0 * 3.14159265 * u2);                                                                                   
-		return mean + stddev * z0;                                                                                                                  
-	endfunction                                                                                                            
+	// =========================================================================
+	// LFSR-based pseudo-random jitter generation (synthesizable)
+	// =========================================================================
 
-	// jittered clock output
-	logic [27:0] jittered_target;
+	// 16-bit LFSR with maximal-length polynomial: x^16 + x^14 + x^13 + x^11 + 1
+	logic [15:0] lfsr;
+
+	always_ff @(posedge clk or negedge rst_n) begin
+		if (!rst_n)
+			lfsr <= 16'hACE1;  // Non-zero seed required
+		else
+			lfsr <= {lfsr[14:0], lfsr[15] ^ lfsr[13] ^ lfsr[12] ^ lfsr[10]};
+	end
+
+	// Extract signed jitter offset from LFSR bits
+	// Range: -(2^JITTER_BITS) to +(2^JITTER_BITS - 1)
+	logic signed [JITTER_BITS:0] jitter_offset;
+	assign jitter_offset = lfsr[JITTER_BITS:0];
+
+	// Jittered clock output
 	logic [27:0] jittered_cnt;
-	real jitter_delay;
-	assign jittered_target = slow_div;
+	logic [27:0] jittered_target;
+
+	// Compute jittered target, clamping to valid range
+	always_comb begin
+		if (slow_div > (1 << JITTER_BITS))
+			jittered_target = slow_div + {{(28-JITTER_BITS-1){jitter_offset[JITTER_BITS]}}, jitter_offset};
+		else
+			jittered_target = slow_div;  // No jitter if divider too small
+	end
+
 	always_ff @(posedge clk or negedge rst_n) begin
 		if (!rst_n) begin
 			jittered_cnt <= '0;
 			clk_slow_jittered <= 1'b0;
-			// jittered_target <= slow_div;
 		end else begin
-			if (jittered_cnt >= jittered_target - 1 + $rtoi( gaussian_rand(0.0, $sqrt(JITTER_VARIANCE)))) begin
+			if (jittered_cnt >= jittered_target - 1) begin
 				jittered_cnt <= '0;
 				clk_slow_jittered <= ~clk_slow_jittered;
-				// calculate new jittered target
-				// jitter_delay =  gaussian_rand(0.0, $sqrt(JITTER_VARIANCE));
-				// if (jitter_delay < - (slow_div / 2.0)) begin
-				// 	jitter_delay = - (slow_div / 2.0);
-				// end else if (jitter_delay > (slow_div / 2.0)) begin
-				// 	jitter_delay = (slow_div / 2.0);
-				// end
-				// jittered_target <= slow_div ;//+ $rtoi(jitter_delay);
 			end else begin
 				jittered_cnt <= jittered_cnt + 1;
 			end

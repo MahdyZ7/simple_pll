@@ -7,6 +7,7 @@ module tb_basys3_pll_top;
 
     // DUT Signals
     logic        clk;
+	logic 		clk_pin_in;
     logic        btnC;
     logic [15:0] sw;
     logic [15:0] led;
@@ -17,10 +18,12 @@ module tb_basys3_pll_top;
 	logic        clk_out_slow;
 	logic        clk_out_jittered;
 	logic        pll_out;
+	logic        clk_pin_out;
 
     // Instantiate DUT
     basys3_pll_top dut (
         .clk(clk),
+		.clk_pin_in(clk_pin_in),
         .btnC(btnC),
         .sw(sw),
         .led(led),
@@ -30,13 +33,16 @@ module tb_basys3_pll_top;
 		.clk_out(clk_out),
 		.clk_out_slow(clk_out_slow),
 		.clk_out_jittered(clk_out_jittered),
-		.pll_out(pll_out)
+		.pll_out(pll_out),
+		.clk_pin_out(clk_pin_out)
     );
 
     // Clock generation
     initial begin
         clk = 0;
-        forever #(CLK_PERIOD/2) clk = ~clk;
+		clk_pin_in = 0;
+		forever #(CLK_PERIOD/2) clk = ~clk;
+		forever #(CLK_PERIOD) clk_pin_in = ~clk_pin_in;
     end
 
     // Main test sequence
@@ -58,7 +64,8 @@ module tb_basys3_pll_top;
         sw[0] = 1;
 		sw[1] = 0; // Start with clean output
 		sw[2] = 1; // enable muti level x_in toggling
-		sw[5:3] = 3'b111; // set fastest clock
+		sw[3] = 0; // disable external clock input
+		sw[6:4] = 3'b111; // set fastest clock
 
         // Run for several cycles and observe output
         repeat(20) begin

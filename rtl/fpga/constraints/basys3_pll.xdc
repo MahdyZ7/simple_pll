@@ -81,6 +81,16 @@ set_property -dict { PACKAGE_PIN L2  IOSTANDARD LVCMOS33 } [get_ports clk_out_sl
 set_property -dict { PACKAGE_PIN J2  IOSTANDARD LVCMOS33 } [get_ports clk_out_jittered]
 set_property -dict { PACKAGE_PIN G2  IOSTANDARD LVCMOS33 } [get_ports pll_out]
 
+
+## ============================================================================
+## External Clock Input Pin on JB Header
+## ============================================================================
+set_property -dict { PACKAGE_PIN A14  IOSTANDARD LVCMOS33 } [get_ports clk_pin_in]
+set_property -dict { PACKAGE_PIN A16  IOSTANDARD LVCMOS33 } [get_ports clk_pin_out]
+set_property -dict { PACKAGE_PIN B15   IOSTANDARD LVCMOS33 } [get_ports x_in_view]
+
+
+
 ## ============================================================================
 ## Configuration Options
 ## ============================================================================

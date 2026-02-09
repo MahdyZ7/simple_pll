@@ -62,6 +62,9 @@ cli: compile
 do:
 	@echo "$(BLUE)>> Running simulation form sim.do file $(NC)"
 	$(VSIM) -do sim.do
+do_noise:
+	@echo "$(BLUE)>> Running simulation form sim.do file $(NC)"
+	$(VSIM) -do sim_noise.do
 
 do_fpga:
 	@echo "$(BLUE)>> Running FPGA simulation form sim.do file for fpga $(NC)"

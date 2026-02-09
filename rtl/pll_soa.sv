@@ -1,4 +1,4 @@
-module pll_foa #(
+module pll_soa #(
     parameter DATA_WIDTH = 32,	// Input/output data width
     parameter COEFF_WIDTH = 32,	// Coefficient width (fixed-point)
 	parameter FRAC_WIDTH = 24	// Fractional bits in fixed-point representation
@@ -6,22 +6,22 @@ module pll_foa #(
     input  logic							clk,
     input  logic							rst_n,
     input  logic							valid_in,
-    input  logic 	x_in,
+    input  logic signed [DATA_WIDTH-1:0]	x_in,
     output logic							valid_out,
     output logic signed [DATA_WIDTH-1:0]	y_out
 );
 
         // Fixed point coefficients with frac size 24 :
         // X coefficients: 
-        localparam signed [COEFF_WIDTH-1:0] c0 =  +32'sd1244869;  // 0.0742 * 16777216 ≈ 1244869
-        localparam signed [COEFF_WIDTH-1:0] c1 =  -32'sd1030121;  // -0.0614 * 16777216 ≈ -1030121
-        localparam signed [COEFF_WIDTH-1:0] c2 =  -32'sd1236481;  // -0.0737 * 16777216 ≈ -1236481
-        localparam signed [COEFF_WIDTH-1:0] c3 =  +32'sd1040187;  // 0.062 * 16777216 ≈ 1040187
+        localparam signed [COEFF_WIDTH-1:0] c0 =  +32'sd16769341;  // 0.999531 * 16777216 ≈ 16769341
+        localparam signed [COEFF_WIDTH-1:0] c1 =  +32'sd27616036;  // 1.64604 * 16777216 ≈ 27616036
+        localparam signed [COEFF_WIDTH-1:0] c2 =  +32'sd10342573;  // 0.616465 * 16777216 ≈ 10342573
+        localparam signed [COEFF_WIDTH-1:0] c3 =  -32'sd504121;  // -0.0300479 * 16777216 ≈ -504121
 
         // Y coefficients: 
-        localparam signed [COEFF_WIDTH-1:0] cy1 =  +32'sd46050104;  // 2.7448 * 16777216 ≈ 46050104
-        localparam signed [COEFF_WIDTH-1:0] cy2 =  -32'sd42226576;  // -2.5169 * 16777216 ≈ -42226576
-        localparam signed [COEFF_WIDTH-1:0] cy3 =  +32'sd12935234;  // 0.771 * 16777216 ≈ 12935234
+        localparam signed [COEFF_WIDTH-1:0] cy1 =  -32'sd27611874;  // -1.6458 * 16777216 ≈ -27611874
+        localparam signed [COEFF_WIDTH-1:0] cy2 =  -32'sd10338087;  // -0.616198 * 16777216 ≈ -10338087
+        localparam signed [COEFF_WIDTH-1:0] cy3 =  +32'sd503359;  // 0.0300025 * 16777216 ≈ 503359
 
     // Delay lines for x and y
 	logic signed [DATA_WIDTH-1:0] x_delay [0:2];
