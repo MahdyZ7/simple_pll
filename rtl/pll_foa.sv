@@ -6,7 +6,7 @@ module pll_foa #(
     input  logic							clk,
     input  logic							rst_n,
     input  logic							valid_in,
-    input  logic 	x_in,
+    input  logic signed [DATA_WIDTH-1:0]	x_in,
     output logic							valid_out,
     output logic signed [DATA_WIDTH-1:0]	y_out
 );
