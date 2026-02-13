@@ -1,14 +1,25 @@
 module tb_pll_foa;
     logic clk, rst_n, valid_in;
-    logic [31:0] x_in, y_out_foa, y_out_foa2, y_out_cfoa, y_out_csoa, y_out_soa;
+    logic [31:0] x_in, y_out_foa;
+	logic [31:0] y_out_foa2, y_out_cfoa, y_out_csoa, y_out_soa;
+	logic [31:0] y_out_df2, y_out_df2T;;
 	logic [2:0] sw;
-    logic valid_out_foa, valid_out_foa2, valid_out_cfoa, valid_out_csoa, valid_out_soa;
+    logic valid_out_foa, valid_out_foa_df2,
+		valid_out_foa2, valid_out_cfoa, valid_out_csoa, valid_out_soa, valid_out_df2T;
 	logic clock_slow, clock_slow_jittered;
 
 
     pll_foa #(.DATA_WIDTH(32)) dut (
         .clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_foa), .y_out(y_out_foa)
     );
+
+	pll_foa_df2 #(.DATA_WIDTH(32)) df2_dut (
+		.clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_foa_df2), .y_out(y_out_df2)
+	);
+
+	pll_foa_df2T #(.DATA_WIDTH(32)) df2T_dut (
+		.clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_df2T), .y_out(y_out_df2T)
+	);
 
 	pll_foa_2 #(.DATA_WIDTH(32)) updated_dut (
 		.clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_foa2), .y_out(y_out_foa2)

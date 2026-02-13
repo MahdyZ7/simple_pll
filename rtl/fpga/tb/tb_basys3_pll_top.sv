@@ -40,16 +40,20 @@ module tb_basys3_pll_top;
     // Clock generation
     initial begin
         clk = 0;
-		clk_pin_in = 0;
 		forever #(CLK_PERIOD/2) clk = ~clk;
-		forever #(CLK_PERIOD) clk_pin_in = ~clk_pin_in;
     end
+
+	initial begin
+		clk_pin_in = 0;
+		forever #(CLK_PERIOD) clk_pin_in = ~clk_pin_in;
+	end
 
     // Main test sequence
     initial begin
         // Initialize
         btnC = 1;  // Start in reset
         sw = 16'h0000;
+		sw[3] = 1; // Start with internal clock
 
         $display("=== Simplified Basys 3 PLL Testbench ===");
 
@@ -64,7 +68,7 @@ module tb_basys3_pll_top;
         sw[0] = 1;
 		sw[1] = 0; // Start with clean output
 		sw[2] = 1; // enable muti level x_in toggling
-		sw[3] = 0; // disable external clock input
+		// sw[3] = 0; // disable external clock input
 		sw[6:4] = 3'b111; // set fastest clock
 
         // Run for several cycles and observe output

@@ -13,21 +13,23 @@ module pll_cfoa #(
 
         // Fixed point coefficients with frac size 24 :
         // X coefficients: 
-        localparam signed [COEFF_WIDTH-1:0] c0 =  +32'sd16771604;  // 0.999665 * 16777216 ≈ 16771604
-        localparam signed [COEFF_WIDTH-1:0] c1 =  +32'sd46601068;  // 2.77764 * 16777216 ≈ 46601068
-        localparam signed [COEFF_WIDTH-1:0] c2 =  +32'sd47053448;  // 2.8046 * 16777216 ≈ 47053448
-        localparam signed [COEFF_WIDTH-1:0] c3 =  +32'sd20416362;  // 1.21691 * 16777216 ≈ 20416362
-        localparam signed [COEFF_WIDTH-1:0] c4 =  +32'sd3192365;  // 0.19028 * 16777216 ≈ 3192365
+        localparam signed [COEFF_WIDTH-1:0] c0 =  +32'sd2651;  // 0.000158014 * 16777216 ≈ 2651
+        localparam signed [COEFF_WIDTH-1:0] c1 =  -32'sd7939;  // -0.000473226 * 16777216 ≈ -7939
+        localparam signed [COEFF_WIDTH-1:0] c2 =  +32'sd5275;  // 0.000314398 * 16777216 ≈ 5275
+        localparam signed [COEFF_WIDTH-1:0] c3 =  +32'sd5302;  // 0.000316027 * 16777216 ≈ 5302
+        localparam signed [COEFF_WIDTH-1:0] c4 =  -32'sd7926;  // -0.000472412 * 16777216 ≈ -7926
+        localparam signed [COEFF_WIDTH-1:0] c5 =  +32'sd2637;  // 0.000157199 * 16777216 ≈ 2637
 
         // Y coefficients: 
-        localparam signed [COEFF_WIDTH-1:0] cy1 =  -32'sd46604356;  // -2.77784 * 16777216 ≈ -46604356
-        localparam signed [COEFF_WIDTH-1:0] cy2 =  -32'sd47049052;  // -2.80434 * 16777216 ≈ -47049052
-        localparam signed [COEFF_WIDTH-1:0] cy3 =  -32'sd20412536;  // -1.21668 * 16777216 ≈ -20412536
-        localparam signed [COEFF_WIDTH-1:0] cy4 =  -32'sd3191691;  // -0.19024 * 16777216 ≈ -3191691
+        localparam signed [COEFF_WIDTH-1:0] cy1 =  +32'sd83797128;  // 4.9947 * 16777216 ≈ 83797128
+        localparam signed [COEFF_WIDTH-1:0] cy2 =  -32'sd167416528;  // -9.9788 * 16777216 ≈ -167416528
+        localparam signed [COEFF_WIDTH-1:0] cy3 =  +32'sd167238976;  // 9.96822 * 16777216 ≈ 167238976
+        localparam signed [COEFF_WIDTH-1:0] cy4 =  -32'sd83530792;  // -4.97882 * 16777216 ≈ -83530792
+        localparam signed [COEFF_WIDTH-1:0] cy5 =  +32'sd16688436;  // 0.994708 * 16777216 ≈ 16688436
 
     // Delay lines for x and y
-	logic signed [DATA_WIDTH-1:0] x_delay [0:3];
-	logic signed [DATA_WIDTH-1:0] y_delay [0:3];
+	logic signed [DATA_WIDTH-1:0] x_delay [0:8];
+	logic signed [DATA_WIDTH-1:0] y_delay [0:7];
 
 	// Intermediate product accumulators (wider to prevent overflow)
 	// logic signed [(DATA_WIDTH+COEFF_WIDTH)-1:0] acc_x, acc_y;
@@ -42,8 +44,8 @@ module pll_cfoa #(
 		// x_in and x_delay are Q16, coefficients are Q16
 		// Feedforward: Q24 * Q24 = Q48, shift by 24 to get Q24
 		// Feedback: Q24 * Q24 = Q48, shift by 24 to get Q24
-		temp_sum_x = (c0 * x_in) + (c1 * x_delay[0]) + (c2 * x_delay[1]) + (c3 * x_delay[2]) + (c4 * x_delay[3]);
-		temp_sum_y = ((cy1 * y_delay[0]) + (cy2 * y_delay[1]) + (cy3 * y_delay[2]) + (cy4 * y_delay[3]) + (1 << (FRAC_WIDTH-1))) >>> FRAC_WIDTH;
+		temp_sum_x = (c0 * x_in) + (c1 * x_delay[0]) + (c2 * x_delay[1]) + (c3 * x_delay[2]) + (c4 * x_delay[3]) + (c5 * x_delay[4]);
+		temp_sum_y = ((cy1 * y_delay[0]) + (cy2 * y_delay[1]) + (cy3 * y_delay[2]) + (cy4 * y_delay[3]) + (cy5 * y_delay[4]) + (1 << (FRAC_WIDTH-1))) >>> FRAC_WIDTH;
 		y_out = ((temp_sum_x + temp_sum_y) + (1 << (FRAC_WIDTH-1))) >>> FRAC_WIDTH;  // Output is Q16
 	end
 
@@ -52,10 +54,20 @@ module pll_cfoa #(
 			x_delay[0] <= 0;
 			x_delay[1] <= 0;
 			x_delay[2] <= 0;
+			x_delay[3] <= 0;
+			x_delay[4] <= 0;
+			x_delay[5] <= 0;
+			x_delay[6] <= 0;
+			x_delay[7] <= 0;
+			x_delay[8] <= 0;
 			y_delay[0] <= 0;
 			y_delay[1] <= 0;
 			y_delay[2] <= 0;
 			y_delay[3] <= 0;
+			y_delay[4] <= 0;
+			y_delay[5] <= 0;
+			y_delay[6] <= 0;
+			y_delay[7] <= 0;
 		end else begin
 			// Shift x delays: x -> x_delay, x -> x_delay[1], etc.
 			if (valid_in) begin
@@ -63,6 +75,11 @@ module pll_cfoa #(
 				x_delay[1] <= x_delay[0];
 				x_delay[2] <= x_delay[1];
 				x_delay[3] <= x_delay[2];
+				x_delay[4] <= x_delay[3];
+				x_delay[5] <= x_delay[4];
+				x_delay[6] <= x_delay[5];
+				x_delay[7] <= x_delay[6];
+				x_delay[8] <= x_delay[7];
 			end
 
 			// Compute y and shift y delays
@@ -72,6 +89,10 @@ module pll_cfoa #(
 				y_delay[1] <= y_delay[0];
 				y_delay[2] <= y_delay[1];
 				y_delay[3] <= y_delay[2];
+				y_delay[4] <= y_delay[3];
+				y_delay[5] <= y_delay[4];
+				y_delay[6] <= y_delay[5];
+				y_delay[7] <= y_delay[6];
 			end
 
 		end

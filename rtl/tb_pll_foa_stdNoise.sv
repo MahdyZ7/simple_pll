@@ -1,12 +1,33 @@
 module tb_pll_foa_stdNoise;
     logic clk, rst_n, valid_in;
-    logic [31:0] x_in, y_out;
-    logic valid_out;
+    logic [31:0] x_in, y_out_foa, y_out_foa2, y_out_cfoa, y_out_csoa, y_out_soa;
+    logic [31:0] y_out_df2;
+    logic valid_out_foa, valid_out_df2, valid_out_foa2, valid_out_cfoa, valid_out_csoa, valid_out_soa;
 
 
     pll_foa #(.DATA_WIDTH(32)) dut (
-        .clk, .rst_n, .valid_in, .x_in, .valid_out, .y_out
+        .clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_foa), .y_out(y_out_foa)
     );
+
+	pll_foa_df2 #(.DATA_WIDTH(32)) df2_dut (
+		.clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_df2), .y_out(y_out_df2)
+	);
+
+	pll_foa_2 #(.DATA_WIDTH(32)) updated_dut (
+		.clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_foa2), .y_out(y_out_foa2)
+	);
+
+	pll_soa #(.DATA_WIDTH(32)) soa_dut (
+		.clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_soa), .y_out(y_out_soa)
+	);
+
+	pll_cfoa #(.DATA_WIDTH(32)) cfoa_dut (
+		.clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_cfoa), .y_out(y_out_cfoa)
+	);
+
+	pll_csoa #(.DATA_WIDTH(32)) csoa_dut (
+		.clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_csoa), .y_out(y_out_csoa)
+	);
 	// Noise parameters
 	localparam real SNR_DB = 10.0;           // Signal-to-noise ratio in dB
 	localparam real JITTER_VARIANCE = 10.0;   // Jitter variance in time units²

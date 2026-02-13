@@ -37,7 +37,7 @@ module basys3_pll_top #(
     // Clock Divider for IIR Filter (reduces timing pressure)
     // =========================================================================
     logic [$clog2(CLK_DIV+1)-1:0] clk_div_cnt;
-    logic clk_half;
+    logic clk_half, clk_in, clk_in_divider;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -81,6 +81,7 @@ module basys3_pll_top #(
     localparam logic signed [DATA_WIDTH-1:0] VAL_A = 32'sd25;
     localparam logic signed [DATA_WIDTH-1:0] VAL_B = 32'sd50;
     assign valid_in = sw0_sync2;  // SW[0] enables filter input
+	assign clk_in_divider = sw[3] ? clk_pin_in : clk; // Use external clock if SW[3] is set
 
 	// =========================================================================
 	// Clock Divider Instance for Jittered Clock (for testing)
@@ -88,7 +89,7 @@ module basys3_pll_top #(
 	clk_divider #(
 		.CLK_FREQ(100_000_000)
 	) clk_div_inst (
-		.clk(clk),
+		.clk(clk_in_divider),
 		.rst_n(rst_n),
 		.freq_sel(sw[6:4]),		// Use SW[6:4] for frequency selection
 		.clk_slow(clk_slow),
@@ -96,8 +97,9 @@ module basys3_pll_top #(
 	);
 
 	assign toggle = sw[1] ? clk_slow_jittered : clk_slow;
-	assign x_in = sw[2] ? (toggle ? VAL_B : VAL_A) : (sw[3] ? clk_pin_in : toggle);
+	assign x_in = sw[2] ? (toggle ? VAL_B : VAL_A) : (sw[3] ? clk_slow : toggle);
 	assign x_in_view = x_in; // Expose x_in for external measurement
+	assign clk_in = (sw[3] ? clk_pin_in : clk_half); // Use external clock if SW[3] is set
 
 
     // =========================================================================
@@ -107,7 +109,7 @@ module basys3_pll_top #(
         .DATA_WIDTH(DATA_WIDTH),
         .COEFF_WIDTH(COEFF_WIDTH)
     ) u_pll_foa (
-        .clk(clk_half),
+        .clk(clk_in),
         .rst_n(rst_n),
         .valid_in(valid_in),
         .x_in(x_in),
