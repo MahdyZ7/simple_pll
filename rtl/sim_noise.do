@@ -6,7 +6,10 @@ vlib TB_PLL_FOA
 vmap TB_PLL_FOA TB_PLL_FOA
 
 # Compile all SystemVerilog files
-vlog -sv -work TB_PLL_FOA +acc pll_foa.sv pll_foa_df2.sv pll_foa_2.sv pll_soa.sv pll_cfoa.sv pll_csoa.sv tb_pll_foa_stdNoise.sv
+vlog -sv -work TB_PLL_FOA +acc +incdir+../generated/rtl pll_foa.sv pll_foa_2.sv pll_foa_df2T.sv \
+  pll_soa.sv pll_cfoa.sv pll_csoa.sv tb_pll_foa_stdNoise.sv \
+  ./NoIntegrator/pll_foa_ni.sv ./NoIntegrator/pll_cfoa_ni.sv ./NoIntegrator/pll_csoa_ni.sv \
+./NoIntegrator/pll_soa_ni.sv
 
 # Load simulation with full visibility
 vsim -voptargs=+acc -L TB_PLL_FOA TB_PLL_FOA.tb_pll_foa_stdNoise
@@ -29,6 +32,12 @@ add wave -format analog-step -height 80 -radix signed /tb_pll_foa_stdNoise/y_out
 add wave -format analog-step -height 80 -radix signed /tb_pll_foa_stdNoise/y_out_soa
 add wave -format analog-step -height 80 -radix signed /tb_pll_foa_stdNoise/y_out_cfoa
 add wave -format analog-step -height 80 -radix signed /tb_pll_foa_stdNoise/y_out_csoa
+add wave -divider "No Ontegrator (Analog)"
+add wave -format analog-step -height 80 -radix signed /tb_pll_foa_stdNoise/y_out_foa_ni
+add wave -format analog-step -height 80 -radix signed /tb_pll_foa_stdNoise/y_out_soa_ni
+add wave -format analog-step -height 80 -radix signed /tb_pll_foa_stdNoise/y_out_cfoa_ni
+add wave -format analog-step -height 80 -radix signed /tb_pll_foa_stdNoise/y_out_csoa_ni
+
 # Add jitter difference signal
 add wave -divider "Jitter Difference"
 add wave /tb_pll_foa_stdNoise/toggle

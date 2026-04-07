@@ -2,10 +2,12 @@ module tb_pll_foa;
     logic clk, rst_n, valid_in;
     logic [31:0] x_in, y_out_foa;
 	logic [31:0] y_out_foa2, y_out_cfoa, y_out_csoa, y_out_soa;
+	logic [31:0] y_out_foa_ni, y_out_cfoa_ni, y_out_csoa_ni, y_out_soa_ni;
 	logic [31:0] y_out_df2, y_out_df2T;;
 	logic [2:0] sw;
-    logic valid_out_foa, valid_out_foa_df2,
-		valid_out_foa2, valid_out_cfoa, valid_out_csoa, valid_out_soa, valid_out_df2T;
+    logic valid_out_foa, valid_out_foa_df2, valid_out_df2T,
+		valid_out_foa2, valid_out_cfoa, valid_out_csoa, valid_out_soa,
+		valid_out_foa_ni, valid_out_cfoa_ni, valid_out_csoa_ni, valid_out_soa_ni;
 	logic clock_slow, clock_slow_jittered;
 
 
@@ -35,6 +37,22 @@ module tb_pll_foa;
 
 	pll_csoa #(.DATA_WIDTH(32)) csoa_dut (
 		.clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_csoa), .y_out(y_out_csoa)
+	);
+
+	pll_foa_ni #(.DATA_WIDTH(32)) foa_ni_dut (
+		.clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_foa_ni), .y_out(y_out_foa_ni)
+	);
+
+	pll_soa_ni #(.DATA_WIDTH(32)) soa_ni_dut (
+		.clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_soa_ni), .y_out(y_out_soa_ni)
+	);
+
+	pll_cfoa_ni #(.DATA_WIDTH(32)) cfoa_ni_dut (
+		.clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_cfoa_ni), .y_out(y_out_cfoa_ni)
+	);
+
+	pll_csoa_ni #(.DATA_WIDTH(32)) csoa_ni_dut (
+		.clk, .rst_n, .valid_in, .x_in, .valid_out(valid_out_csoa_ni), .y_out(y_out_csoa_ni)
 	);
 
 

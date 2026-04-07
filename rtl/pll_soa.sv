@@ -11,21 +11,7 @@ module pll_soa #(
     output logic signed [DATA_WIDTH-1:0]	y_out
 );
 
-        // Fixed point coefficients with frac size 24 :
-        // X coefficients: 
-        localparam signed [COEFF_WIDTH-1:0] c0 =  +32'sd2447;  // 0.000145872 * 16777216 ≈ 2447
-        localparam signed [COEFF_WIDTH-1:0] c1 =  -32'sd7333;  // -0.000437064 * 16777216 ≈ -7333
-        localparam signed [COEFF_WIDTH-1:0] c2 =  +32'sd4876;  // 0.000290639 * 16777216 ≈ 4876
-        localparam signed [COEFF_WIDTH-1:0] c3 =  +32'sd4895;  // 0.000291744 * 16777216 ≈ 4895
-        localparam signed [COEFF_WIDTH-1:0] c4 =  -32'sd7323;  // -0.000436512 * 16777216 ≈ -7323
-        localparam signed [COEFF_WIDTH-1:0] c5 =  +32'sd2438;  // 0.00014532 * 16777216 ≈ 2438
-
-        // Y coefficients: 
-        localparam signed [COEFF_WIDTH-1:0] cy1 =  +32'sd83822816;  // 4.99623 * 16777216 ≈ 83822816
-        localparam signed [COEFF_WIDTH-1:0] cy2 =  -32'sd167519136;  // -9.98492 * 16777216 ≈ -167519136
-        localparam signed [COEFF_WIDTH-1:0] cy3 =  +32'sd167392736;  // 9.97738 * 16777216 ≈ 167392736
-        localparam signed [COEFF_WIDTH-1:0] cy4 =  -32'sd83633200;  // -4.98493 * 16777216 ≈ -83633200
-        localparam signed [COEFF_WIDTH-1:0] cy5 =  +32'sd16714015;  // 0.996233 * 16777216 ≈ 16714015
+	`include "pll_soa_coeffs.svh"
 
     // Delay lines for x and y
 	logic signed [DATA_WIDTH-1:0] x_delay [0:4];

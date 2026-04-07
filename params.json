@@ -1,0 +1,13 @@
+{
+  "alpha_f": 0.1,
+  "alpha_v": 0.1,
+  "beta_f": 0.1,
+  "beta_v": 0.1,
+  "tau": 0.01,
+  "wc": 100,
+  "kf": 100,
+  "kv": 100,
+  "T": 0.001,
+  "frac_width": 24,
+  "coeff_width": 32
+}

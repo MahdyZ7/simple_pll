@@ -47,7 +47,7 @@ map_lib: create_lib
 # Compile SystemVerilog files
 compile: map_lib
 	@echo "$(BLUE)>> Compiling SystemVerilog files: $(SV_FILES) $(NC)"
-	$(VLOG) -sv -quiet -work $(LIB_NAME) +acc $(SV_FILES)
+	$(VLOG) -sv -quiet -work $(LIB_NAME) +acc +incdir+../generated/rtl $(SV_FILES)
 
 # Run simulation
 simulate: compile
@@ -73,7 +73,7 @@ do_fpga:
 icarus_compile:
 	mkdir -p build
 	@echo "$(BLUE)>> Compiling SystemVerilog files: $(SV_FILES) $(NC)"
-	$(ICARUS)  -Wall -g2012  -o build/testbench $(SV_FILES)
+	$(ICARUS)  -Wall -g2012 -I../generated/rtl -o build/testbench $(SV_FILES)
 
 icarus_run: icarus_compile
 	cd build && ./testbench
@@ -149,7 +149,7 @@ fpga_icarus: fpga_icarus_compile fpga_icarus_run
 fpga_icarus_compile:
 	mkdir -p build/fpga
 	@echo "$(BLUE)>> Compiling FPGA testbench with Icarus $(NC)"
-	$(ICARUS) -Wall -g2012 -o build/fpga/$(FPGA_TB_TOP) $(FPGA_SRC) $(FPGA_TB)
+	$(ICARUS) -Wall -g2012 -I../generated/rtl -o build/fpga/$(FPGA_TB_TOP) $(FPGA_SRC) $(FPGA_TB)
 
 fpga_icarus_run: fpga_icarus_compile
 	cd build/fpga && ./$(FPGA_TB_TOP)

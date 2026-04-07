@@ -20,3 +20,7 @@ cp fpga/tb/tb_basys3_pll_top.sv /mnt/c/Users/amahd/Documents/Vivado/Simple_pll\
 # constraints
 cp fpga/constraints/basys3_pll.xdc /mnt/c/Users/amahd/Documents/Vivado/Simple_pll\
 /Simple_pll.srcs/constrs_1/imports/constraints/
+
+# params
+cp ../generated/rtl/*.svh /mnt/c/Users/amahd/Documents/Vivado/Simple_pll\
+/Simple_pll.srcs/sources_1/imports/rtl/

@@ -11,45 +11,22 @@ module pll_foa_df2T #(
     output logic signed [DATA_WIDTH-1:0]	y_out
 );
 
-        // Fixed point coefficients with frac size 24 :
-        // X coefficients: 
-        localparam signed [COEFF_WIDTH-1:0] c0 =  +32'sd1244869;  // 0.0742 * 16777216 ≈ 1244869
-        localparam signed [COEFF_WIDTH-1:0] c1 =  -32'sd1030121;  // -0.0614 * 16777216 ≈ -1030121
-        localparam signed [COEFF_WIDTH-1:0] c2 =  -32'sd1236481;  // -0.0737 * 16777216 ≈ -1236481
-        localparam signed [COEFF_WIDTH-1:0] c3 =  +32'sd1040187;  // 0.062 * 16777216 ≈ 1040187
+	`include "pll_foa_coeffs.svh"
 
-        // Y coefficients: 
-        localparam signed [COEFF_WIDTH-1:0] cy1 =  +32'sd46050104;  // 2.7448 * 16777216 ≈ 46050104
-        localparam signed [COEFF_WIDTH-1:0] cy2 =  -32'sd42226576;  // -2.5169 * 16777216 ≈ -42226576
-        localparam signed [COEFF_WIDTH-1:0] cy3 =  +32'sd12935234;  // 0.771 * 16777216 ≈ 12935234
+    // Direct Form II Transposed state registers (product precision: 2*FRAC_WIDTH fractional bits)
+	logic signed [DATA_WIDTH+COEFF_WIDTH:0] w1_delay;
+	logic signed [DATA_WIDTH+COEFF_WIDTH:0] w2_delay;
+	logic signed [DATA_WIDTH+COEFF_WIDTH:0] w3_delay;
 
-    // Direct Form II Transpose: single set of delay elements (w)
-	logic signed [DATA_WIDTH+COEFF_WIDTH-1:0] y_temp;
-	logic signed [DATA_WIDTH+COEFF_WIDTH-1:0] w1;
-	logic signed [DATA_WIDTH+COEFF_WIDTH-1:0] w1_delay;
-	logic signed [DATA_WIDTH+COEFF_WIDTH-1:0] w2;
-	logic signed [DATA_WIDTH+COEFF_WIDTH-1:0] w2_delay;
-	logic signed [DATA_WIDTH+COEFF_WIDTH-1:0] w3;
-	logic signed [DATA_WIDTH+COEFF_WIDTH-1:0] w3_delay;
+	logic signed [DATA_WIDTH+COEFF_WIDTH:0] y_full;
 
-
-	// Wider accumulators to prevent overflow (matches pll_foa.sv)
-	// logic signed [DATA_WIDTH+COEFF_WIDTH:0] feedback_acc;
-	// logic signed [DATA_WIDTH+COEFF_WIDTH:0] feedforward_acc;
-
-	always_ff @(posedge clk or negedge rst_n) begin
-		if (!rst_n) begin
-			w3 <= 0;
-			w2 <= 0;
-			w1 <= 0;
-			y_temp <= 0;
-		end else begin
-			w3 = ((y_temp * cy3) >>> FRAC_WIDTH) + x_in * c3;
-			w2 = ((y_temp * cy2) >>> FRAC_WIDTH) + x_in * c2 + w3_delay;
-			w1 = ((y_temp * cy1) >>> FRAC_WIDTH) + x_in * c1 + w2_delay;
-			y_temp = x_in * c0 + w1_delay;
-		end
-		y_out = y_temp >>> FRAC_WIDTH;
+	// DF2T: y[n]  = c0*x[n] + w1[n-1]
+	//       w1[n] = c1*x[n] + cy1*y[n] + w2[n-1]
+	//       w2[n] = c2*x[n] + cy2*y[n] + w3[n-1]
+	//       w3[n] = c3*x[n] + cy3*y[n]
+	always_comb begin
+		y_full = c0 * x_in + w1_delay;
+		y_out  = (y_full + (1 << (FRAC_WIDTH-1))) >>> FRAC_WIDTH;
 	end
 
 	always_ff @(posedge clk or negedge rst_n) begin
@@ -58,9 +35,9 @@ module pll_foa_df2T #(
 			w2_delay <= 0;
 			w3_delay <= 0;
 		end else if (valid_in) begin
-			w1_delay <= w1;
-			w2_delay <= w2;
-			w3_delay <= w3;
+			w1_delay <= c1 * x_in + cy1 * y_out + w2_delay;
+			w2_delay <= c2 * x_in + cy2 * y_out + w3_delay;
+			w3_delay <= c3 * x_in + cy3 * y_out;
 		end
 	end
 	assign valid_out = valid_in;

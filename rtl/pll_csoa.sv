@@ -11,29 +11,7 @@ module pll_csoa #(
     output logic signed [DATA_WIDTH-1:0]	y_out
 );
 
-        // Fixed point coefficients with frac size 24 :
-        // X coefficients: 
-        localparam signed [COEFF_WIDTH-1:0] c0 =  +32'sd2350;  // 0.000140065 * 16777216 ≈ 2350
-        localparam signed [COEFF_WIDTH-1:0] c1 =  -32'sd16414;  // -0.000978371 * 16777216 ≈ -16414
-        localparam signed [COEFF_WIDTH-1:0] c2 =  +32'sd46788;  // 0.00278881 * 16777216 ≈ 46788
-        localparam signed [COEFF_WIDTH-1:0] c3 =  -32'sd65309;  // -0.00389269 * 16777216 ≈ -65309
-        localparam signed [COEFF_WIDTH-1:0] c4 =  +32'sd32411;  // 0.00193182 * 16777216 ≈ 32411
-        localparam signed [COEFF_WIDTH-1:0] c5 =  +32'sd32898;  // 0.00196086 * 16777216 ≈ 32898
-        localparam signed [COEFF_WIDTH-1:0] c6 =  -32'sd65309;  // -0.00389269 * 16777216 ≈ -65309
-        localparam signed [COEFF_WIDTH-1:0] c7 =  +32'sd46510;  // 0.00277221 * 16777216 ≈ 46510
-        localparam signed [COEFF_WIDTH-1:0] c8 =  -32'sd16240;  // -0.000968002 * 16777216 ≈ -16240
-        localparam signed [COEFF_WIDTH-1:0] c9 =  +32'sd2315;  // 0.000137991 * 16777216 ≈ 2315
-
-        // Y coefficients: 
-        localparam signed [COEFF_WIDTH-1:0] cy1 =  +32'sd150755328;  // 8.98572 * 16777216 ≈ 150755328
-        localparam signed [COEFF_WIDTH-1:0] cy2 =  -32'sd602064128;  // -35.8858 * 16777216 ≈ -602064128
-        localparam signed [COEFF_WIDTH-1:0] cy3 =  +32'sd1402586112;  // 83.6007 * 16777216 ≈ 1402586112
-        localparam signed [COEFF_WIDTH-1:0] cy4 =  -32'sd2100537600;  // -125.202 * 16777216 ≈ -2100537600
-        localparam signed [COEFF_WIDTH-1:0] cy5 =  +32'sd2097202304;  // 125.003 * 16777216 ≈ 2097202304
-        localparam signed [COEFF_WIDTH-1:0] cy6 =  -32'sd1395912832;  // -83.2029 * 16777216 ≈ -1395912832
-        localparam signed [COEFF_WIDTH-1:0] cy7 =  +32'sd597297600;  // 35.6017 * 16777216 ≈ 597297600
-        localparam signed [COEFF_WIDTH-1:0] cy8 =  -32'sd149087024;  // -8.88628 * 16777216 ≈ -149087024
-        localparam signed [COEFF_WIDTH-1:0] cy9 =  +32'sd16538884;  // 0.985794 * 16777216 ≈ 16538884
+	`include "pll_csoa_coeffs.svh"
 
     // Delay lines for x and y
 	logic signed [DATA_WIDTH-1:0] x_delay [0:13];

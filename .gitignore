@@ -1,3 +1,9 @@
+#generated
+generated/
+.venv/
+__pycache__/
+exploration*
+
 #cpp
 *.o
 

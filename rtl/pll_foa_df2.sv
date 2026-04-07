@@ -11,17 +11,7 @@ module pll_foa_df2 #(
     output logic signed [DATA_WIDTH-1:0]	y_out
 );
 
-        // Fixed point coefficients with frac size 24 :
-        // X coefficients: 
-        localparam signed [COEFF_WIDTH-1:0] c0 =  +32'sd1244869;  // 0.0742 * 16777216 ≈ 1244869
-        localparam signed [COEFF_WIDTH-1:0] c1 =  -32'sd1030121;  // -0.0614 * 16777216 ≈ -1030121
-        localparam signed [COEFF_WIDTH-1:0] c2 =  -32'sd1236481;  // -0.0737 * 16777216 ≈ -1236481
-        localparam signed [COEFF_WIDTH-1:0] c3 =  +32'sd1040187;  // 0.062 * 16777216 ≈ 1040187
-
-        // Y coefficients: 
-        localparam signed [COEFF_WIDTH-1:0] cy1 =  +32'sd46050104;  // 2.7448 * 16777216 ≈ 46050104
-        localparam signed [COEFF_WIDTH-1:0] cy2 =  -32'sd42226576;  // -2.5169 * 16777216 ≈ -42226576
-        localparam signed [COEFF_WIDTH-1:0] cy3 =  +32'sd12935234;  // 0.771 * 16777216 ≈ 12935234
+	`include "pll_foa_coeffs.svh"
 
     // Direct Form II: single set of delay elements (w)
 	logic signed [DATA_WIDTH-1:0] w;

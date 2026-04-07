@@ -1,0 +1,27 @@
+[project]
+name = "pll"
+version = "0.1.0"
+description = "Fractional-order PLL system analysis using El-Khazali approximations"
+readme = "README.md"
+authors = [
+    { name = "Ahmed Mahdy", email = "amahdy9@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "numpy",
+    "scipy",
+    "control",
+    "sympy",
+    "matplotlib",
+    "pandas",
+]
+
+[project.scripts]
+pll = "pll.main:main"
+pll-explore = "pll.explore:main"
+pll-analyze = "pll.analyze:main"
+pll-generate = "pll.generate:main"
+
+[build-system]
+requires = ["uv_build>=0.10.0,<0.11.0"]
+build-backend = "uv_build"

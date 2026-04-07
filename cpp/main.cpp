@@ -2,11 +2,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-const double x_coff[] = {0.0742, -0.0614, -0.0737, 0.0620};
-const double y_coff[] = {2.7448, -2.5169, 0.7710};
-const int frac_size = 24;
-
-// Change this to switch between long and int for Fixed point type
+#include "coefficients.h"
 typedef long FixedType;
 // typedef int FixedType;
 
@@ -18,9 +14,9 @@ void print_cofficients(int frac_size);
 int main(void)
 {
 	// return test1();
-	// for (int i = 8; i <= 33; i += 1)
-	// 	pll_comparison(i);
-	print_cofficients(frac_size);
+	for (int i = 24; i <= 24; i += 1)
+		pll_comparison(i);
+	// print_cofficients(frac_size);
 	return 0;
 }
 
@@ -121,8 +117,8 @@ int pll_comparison(int frac_size)
 
 		double perc_error = abs((y_n - y_n_fixed.toDouble()) / y_n) * 100;
 		perc_err_avg += perc_error;		
-		// std::cout << "n: " << n << " Input: " << x_n << " Output Double: "
-		//  << y_n << " Output Fixed: " << y_n_fixed << " Percentage Error: " << perc_error << " %" << std::endl;
+		std::cout << "n: " << n << " Input: " << x_n << " Output Double: "
+		 << y_n << " Output Fixed: " << y_n_fixed << " Percentage Error: " << perc_error << " %" << std::endl;
 	}
 	perc_err_avg /=  (1.0 * loop_count);
 	std::cout << "Average Percentage Error for frac size " << frac_size << " is " << perc_err_avg << " %" << std::endl;
